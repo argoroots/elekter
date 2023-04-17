@@ -70,7 +70,6 @@ exports.handler = async (event) => {
     const gridFee = getGridFee(dt)
     const renewableTax = 0.0149
     const excise = 0.0012
-    const total = Math.round((price + gridFee + renewableTax + excise) * 10000) / 10000
 
     return [
       dt.getFullYear(),
@@ -80,8 +79,7 @@ exports.handler = async (event) => {
       price,
       gridFee,
       renewableTax,
-      excise,
-      total
+      excise
     ]
   })
 

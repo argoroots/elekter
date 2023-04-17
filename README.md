@@ -8,7 +8,6 @@ API to get hourly electricity price:
     price,
     gridFee,
     renewableTax,
-    excise,
-    total
+    excise
   ]
 ```
