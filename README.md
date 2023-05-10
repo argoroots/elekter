@@ -16,4 +16,4 @@ API response is in following format:
   ]
 ```
 
-[Electricity](https://icons8.com/icon/3ajhHNEQm9bj/electricity-hazard) icon by [Icons8](https://icons8.com)
+[Electricity](https://icons8.com/icon/J4l0714N594x/electricity-hazard) icon by [Icons8](https://icons8.com)
