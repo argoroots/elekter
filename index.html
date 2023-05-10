@@ -7,7 +7,7 @@
     <title>Elektri hind</title>
 </head>
 <body>
-    <div id="chart" style="width: 70%; margin: 2rem auto"></div>
+    <div id="chart" style="width: 80%; height: 500px; margin: 2rem auto; padding-top: 4rem;"></div>
     <script src="https://www.gstatic.com/charts/loader.js"></script>
     <script>
         google.charts.load('current', { packages: ['bar'] })
@@ -43,8 +43,7 @@
                 },
                 vAxis: {
                     format: '0.00s'
-                },
-                height: 400
+                }
             }
             const div = document.getElementById('chart')
 
