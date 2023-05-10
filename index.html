@@ -1,48 +1,23 @@
-<!DOCTYPE html>
-<html lang="en">
+<!doctype html>
+<html lang="et">
 <head>
     <meta charset="UTF-8">
-    <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <script src="https://cdn.tailwindcss.com"></script>
     <title>Elektri hind</title>
     <style>
         body {
             color: rgb(117, 117, 117);
             font-family: Roboto;
-            font-size: 16px;
-            -webkit-font-smoothing: antialiased;
         }
-        #chart {
-            width: 80%;
-            height: 500px;
-            margin: 2rem auto;
-            padding-top: 4rem;
-        }
-        #lowest {
-            width: 80%;
-            margin: 2rem auto;
-        }
-        .lowest-row {
-            display: inline-block;
-            width: 25%;
-            text-align: center;
-        }
-        .lowest-row strong {
-            display: block;
-            padding-bottom: .5rem;
-        }
-        .lowest-row span {
-            display: block;
-            padding-top: .5rem;
-            color: rgb(189, 189, 189);
-            font-size: 14px;
-        }
-
     </style>
 </head>
-<body>
-    <div id="chart"></div>
-    <div id="lowest"></div>
+<body class="h-full h-full">
+    <div class="container my-8 mx-auto px-2 flex flex-col gap-8 antialiased">
+        <div id="chart" class="h-96"></div>
+        <div id="lowest" class="flex flex-col sm:flex-row gap-4 justify-between"></div>
+    </div>
+
     <script src="https://www.gstatic.com/charts/loader.js"></script>
     <script>
         google.charts.load('current', { packages: ['bar'] })
@@ -99,7 +74,7 @@
             const lowestDiv = document.getElementById('lowest')
 
             new google.charts.Bar(chartDiv).draw(data, google.charts.Bar.convertOptions(options))
-            lowestDiv.innerHTML = lowest.map((x) => `<div class="lowest-row"><strong>${x.at(0)}</strong>${x.at(1)}:00 – ${x.at(2)}:00<span>${x.at(3).toFixed(2)}s</span></div>`).join('')
+            lowestDiv.innerHTML = lowest.map((x) => `<div class="flex flex-col gap-2 items-center"><div class="font-bold">${x.at(0)}</div>${x.at(1)}:00 – ${x.at(2)}:00<div>${x.at(3).toFixed(2)}s</div></div>`).join('')
         })
 
         function findLowestTimeSpan(prices, span) {
