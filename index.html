@@ -14,9 +14,8 @@
 
         html, body {
             @apply h-full;
+            @apply w-full;
             @apply bg-white;
-            @apply select-none;
-            @apply cursor-default;
             color: rgb(117, 117, 117);
         }
     </style>
@@ -35,7 +34,7 @@
     <script>
         google.charts.load('current', { packages: ['bar'] })
         google.charts.setOnLoadCallback(async function () {
-            const response = await fetch('https://api.roots.ee/elekter')
+            const response = await fetch('https://api.roots.ee/elekter' + location.search)
             const responseJson = await response.json()
             const prices = responseJson.map((x) => [
                 x.at(3).toString(),
