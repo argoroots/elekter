@@ -5,9 +5,40 @@
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Elektri hind</title>
+    <style>
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Oxygen-Sans, Ubuntu, Cantarell, "Helvetica Neue", sans-serif;
+        }
+        #chart {
+            width: 80%;
+            height: 500px;
+            margin: 2rem auto;
+            padding-top: 4rem;
+        }
+        #lowest {
+            width: 80%;
+            margin: 2rem auto;
+        }
+        .lowest-row {
+            display: inline-block;
+            width: 25%;
+            text-align: center;
+        }
+        .lowest-row strong {
+            display: block;
+            padding-bottom: .5rem;
+        }
+        .lowest-row span {
+            display: block;
+            padding-top: .5rem;
+            color: gray;
+        }
+
+    </style>
 </head>
 <body>
-    <div id="chart" style="width: 80%; height: 500px; margin: 2rem auto; padding-top: 4rem;"></div>
+    <div id="chart"></div>
+    <div id="lowest"></div>
     <script src="https://www.gstatic.com/charts/loader.js"></script>
     <script>
         google.charts.load('current', { packages: ['bar'] })
@@ -22,8 +53,23 @@
                 x.at(4) * 100
             ])
 
+            const lowest = [
+                ['1h', ...findLowestTimeSpan(prices, 1)],
+                ['2h', ...findLowestTimeSpan(prices, 2)],
+                ['3h', ...findLowestTimeSpan(prices, 3)],
+                ['4h', ...findLowestTimeSpan(prices, 4)],
+            ]
+
+            console.log(lowest);
+
             const data = google.visualization.arrayToDataTable([
-                ['tund', 'aktsiis', 'taastuvenergiatasu', 'edastustasu', 'elekter'],
+                [
+                    'tund',
+                    'aktsiis',
+                    'taastuvenergiatasu',
+                    'edastustasu',
+                    'elekter'
+                ],
                 ...prices
             ])
 
@@ -45,10 +91,30 @@
                     format: '0.00s'
                 }
             }
-            const div = document.getElementById('chart')
+            const chartDiv = document.getElementById('chart')
+            const lowestDiv = document.getElementById('lowest')
 
-            new google.charts.Bar(div).draw(data, google.charts.Bar.convertOptions(options))
+            new google.charts.Bar(chartDiv).draw(data, google.charts.Bar.convertOptions(options))
+            lowestDiv.innerHTML = lowest.map((x) => `<div class="lowest-row"><strong>${x.at(0)}</strong>${x.at(1)}:00 – ${x.at(2)}:00<span>${x.at(3).toFixed(2)}s</span></div>`).join('')
         })
+
+        function findLowestTimeSpan(prices, span) {
+            const pricesSum = prices.map((x) => x.at(1) + x.at(2) + x.at(3) + x.at(4))
+
+            let lowestSum = Infinity
+            let lowestSumIndex = -1
+
+            for (let i = 0; i < pricesSum.length - span + 1; i++) {
+                const sum = pricesSum.slice(i, i + span).reduce((acc, val) => acc + val, 0)
+
+                if (sum < lowestSum) {
+                    lowestSum = sum
+                    lowestSumIndex = i
+                }
+            }
+
+            return [prices[lowestSumIndex].at(0), prices[lowestSumIndex + span].at(0), lowestSum / span]
+        }
     </script>
 </body>
 </html>
