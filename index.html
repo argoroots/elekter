@@ -83,7 +83,7 @@
             const lowestDiv = document.getElementById('lowest')
 
             new google.charts.Bar(chartDiv).draw(data, google.charts.Bar.convertOptions(options))
-            lowestDiv.innerHTML = lowest.map((x) => `<div class="flex flex-col gap-2 items-center"><div class="font-bold">${x.at(0)}</div>${x.at(1)}:00 – ${x.at(2)}:00<div>${x.at(3).toFixed(2)}s</div></div>`).join('')
+            lowestDiv.innerHTML = lowest.map((x) => `<div class="flex flex-col gap-2 items-center"><div class="font-bold">${x.at(0)}</div>${x.at(1)}:00 – ${x.at(2)}:00<div class="text-xs">${x.at(3).toFixed(2)}s</div></div>`).join('')
         })
 
         function findLowestTimeSpan(prices, span) {
