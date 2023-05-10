@@ -6,14 +6,25 @@
     <script src="https://cdn.tailwindcss.com"></script>
     <title>Elektri hind</title>
     <style>
-        body {
+        @tailwind base;
+        @tailwind components;
+        @tailwind utilities;
+
+        html, body {
+            @apply h-full;
+            @apply bg-white;
+            @apply select-none;
+            @apply cursor-default;
             color: rgb(117, 117, 117);
-            font-family: Roboto;
         }
     </style>
 </head>
 <body class="h-full h-full">
-    <div class="container my-8 mx-auto px-2 flex flex-col gap-8 antialiased">
+    <div class="container my-12 mx-auto px-2 flex flex-col gap-20 antialiased">
+        <h1 class="self-center w-max text-2xl text-center font-bold text-stone-900/80 tracking-wide">
+            Elektri hind
+            <span class="block italic text-right text-sm font-thin">by <a class="hover:underline" href="mailto:argo@roots.ee?subject=Elektri hind">Argo Roots</a></span>
+        </h1>
         <div id="chart" class="h-96"></div>
         <div id="lowest" class="grid grid-cols-1 sm:grid-cols-4 gap-8 justify-between"></div>
     </div>
@@ -53,10 +64,6 @@
             ])
 
             const options = {
-                chart: {
-                    title: 'Elektri hind',
-                    subtitle: 's/kWh'
-                },
                 isStacked: true,
                 bars: 'vertical',
                 legend: {
