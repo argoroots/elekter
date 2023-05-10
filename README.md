@@ -1,4 +1,4 @@
-API and website to get hourly electricity price. API data is:
+API and website to get hourly electricity price. API data is in following format:
 ```
   [
     year,
@@ -11,3 +11,5 @@ API and website to get hourly electricity price. API data is:
     excise
   ]
 ```
+
+[Electricity](https://icons8.com/icon/J4l0714N594x/electricity-hazard) icon by [Icons8](https://icons8.com)
