@@ -1,4 +1,4 @@
-API to get hourly electricity price:
+API and website to get hourly electricity price. API data is:
 ```
   [
     year,
