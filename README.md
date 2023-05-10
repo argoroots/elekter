@@ -1,4 +1,8 @@
-API and website to get hourly electricity price. API data is in following format:
+API and website to get hourly electricity price.
+API query parameters:
+- plan - Grid service plan: V1, V2, V2k, V4 or V5.
+
+API response is in following format:
 ```
   [
     year,
