@@ -15,7 +15,7 @@
             const response = await fetch('https://api.roots.ee/elekter')
             const responseJson = await response.json()
             const prices = responseJson.map((x) => [
-                `${x.at(3)}.00`,
+                x.at(3).toString(),
                 x.at(7) * 100,
                 x.at(6) * 100,
                 x.at(5) * 100,
