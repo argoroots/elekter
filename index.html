@@ -29,6 +29,7 @@
         </h1>
         <div id="chart" class="h-96"></div>
         <div id="lowest" class="grid grid-cols-1 sm:grid-cols-4 gap-8 justify-between"></div>
+        <div class="italic text-sm text-center">Hindu kuvatakse koos käibemaksuga, sentides kilovatt-tunni kohta.</div>
     </div>
 
     <script src="https://www.gstatic.com/charts/loader.js"></script>
@@ -74,9 +75,6 @@
                 axes: {
                     x: { 0: { label: ''} },
                     y: { 0: { label: ''} }
-                },
-                vAxis: {
-                    format: '0.00s'
                 }
             }
             const chartDiv = document.getElementById('chart')
