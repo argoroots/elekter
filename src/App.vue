@@ -12,7 +12,7 @@ const plans = [
   { value: 'V5', label: 'Võrk 5' }
 ]
 const selectedPlan = ref(plans.find(x => x.value === (new URLSearchParams(window.location.search).get('plan') || 'V1')))
-const selectedLowest = ref()
+const selectedLowest = ref(new URLSearchParams(window.location.search).get('lowest') || null)
 const prices = ref()
 const options = ref({
   bar: { groupWidth: '75%' },
@@ -37,8 +37,9 @@ const options = ref({
 
 const data = computed(() => {
   if (!prices.value) return
+  const { startIndex, endIndex } = selectedLowest.value ? lowest.value.find(x => x.value === selectedLowest.value) : {}
 
-  if (selectedLowest.value) {
+  if (startIndex >= 0 && endIndex >= 0) {
     return [
       [
         'Tund',
@@ -54,13 +55,13 @@ const data = computed(() => {
       ...prices.value.map((x, idx) => [
         x.at(0),
         x.at(1),
-        idx >= selectedLowest.value.startIndex && idx <= selectedLowest.value.endIndex ? '#10b981' : null,
+        idx >= startIndex && idx <= endIndex ? '#10b981' : null,
         x.at(2),
-        idx >= selectedLowest.value.startIndex && idx <= selectedLowest.value.endIndex ? '#34d399' : null,
+        idx >= startIndex && idx <= endIndex ? '#34d399' : null,
         x.at(3),
-        idx >= selectedLowest.value.startIndex && idx <= selectedLowest.value.endIndex ? '#6ee7b7' : null,
+        idx >= startIndex && idx <= endIndex ? '#6ee7b7' : null,
         x.at(4),
-        idx >= selectedLowest.value.startIndex && idx <= selectedLowest.value.endIndex ? '#a7f3d0' : null
+        idx >= startIndex && idx <= endIndex ? '#a7f3d0' : null
       ])]
   } else {
     return [
@@ -77,15 +78,29 @@ const data = computed(() => {
 })
 
 const lowest = computed(() => prices.value && [
-  { label: '1h', ...findLowestTimeSpan(prices.value, 1) },
-  { label: '2h', ...findLowestTimeSpan(prices.value, 2) },
-  { label: '3h', ...findLowestTimeSpan(prices.value, 3) },
-  { label: '4h', ...findLowestTimeSpan(prices.value, 4) }
+  { value: '1h', ...findLowestTimeSpan(prices.value, 1) },
+  { value: '2h', ...findLowestTimeSpan(prices.value, 2) },
+  { value: '3h', ...findLowestTimeSpan(prices.value, 3) },
+  { value: '4h', ...findLowestTimeSpan(prices.value, 4) }
 ])
 
 watch(() => selectedPlan.value, (val) => {
-  window.history.replaceState({}, '', '?plan=' + val.value)
   getPrices()
+
+  const params = new URLSearchParams({
+    plan: val.value,
+    lowest: selectedLowest.value || ''
+  })
+  window.history.replaceState({}, '', `?${params.toString()}`)
+})
+
+watch(() => selectedLowest.value, (val) => {
+  console.log(val)
+  const params = new URLSearchParams({
+    plan: selectedPlan.value.value,
+    lowest: val || ''
+  })
+  window.history.replaceState({}, '', `?${params.toString()}`)
 })
 
 onMounted(getPrices)
@@ -158,17 +173,20 @@ function findLowestTimeSpan (prices, span) {
       <div
         v-for="x in lowest"
         :key="x.index"
-        class="group p-4 flex flex-col gap-2 items-center cursor-pointer hover:bg-green-50 border border-transparent hover:border-green-300 rounded-lg"
-        @mouseover="selectedLowest = x"
-        @mouseleave="selectedLowest = null"
+        class="p-4 flex flex-col gap-2 items-center cursor-pointer border  hover:border-green-300 rounded-lg"
+        :class="selectedLowest === x.value ? 'border-green-300 bg-green-50' : 'border-transparent'"
+        @click="selectedLowest = selectedLowest !== x.value ? x.value : null"
       >
         <div class="font-bold text-blue-400">
-          {{ x.label }}
+          {{ x.value }}
         </div>
 
         {{ x.start }}.00 – {{ x.end }}.00
 
-        <div class="mt-1 py-1 px-2 text-xs text-green-600 border border-green-300 bg-green-50 group-hover:bg-transparent group-hover:border-transparent rounded">
+        <div
+          class="mt-1 py-1 px-2 text-xs text-green-600 border rounded"
+          :class="selectedLowest === x.value ? 'font-bold border-transparent bg-transparent' : 'border-green-300 bg-green-50'"
+        >
           {{ x.price.toFixed(2) }}
         </div>
       </div>
