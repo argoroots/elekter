@@ -42,23 +42,23 @@ function changeTimeZone (date, timeZone) {
 
 function getGridFee (date, service = 'V4') {
   const plans = {
-    'V1': {
+    V1: {
       price: 0.0865
     },
-    'V2': {
+    V2: {
       day: 0.1042,
-      night: 0.0606,
+      night: 0.0606
     },
-    'V2k': {
+    V2k: {
       day: 0.0680,
-      night: 0.0394,
+      night: 0.0394
     },
-    'V4': {
+    V4: {
       day: 0.0443,
-      night: 0.0252,
+      night: 0.0252
 
     },
-    'V5': {
+    V5: {
       day: 0.0617,
       dayTop: 0.0953,
       night: 0.0354,
@@ -97,8 +97,6 @@ function getGridFee (date, service = 'V4') {
         return plans[service].day
       }
   }
-
-
 }
 
 exports.handler = async (event) => {
