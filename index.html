@@ -34,6 +34,13 @@
 
     <script src="https://www.gstatic.com/charts/loader.js"></script>
     <script>
+        const chartDiv = document.getElementById('chart')
+        const lowestDiv = document.getElementById('lowest')
+
+        let data = []
+        let lowest = []
+        let options = {}
+
         google.charts.load('current', { packages: ['bar'] })
         google.charts.setOnLoadCallback(async function () {
             const response = await fetch('https://api.roots.ee/elekter' + location.search)
@@ -46,16 +53,14 @@
                 x.at(4) * 100
             ])
 
-            const lowest = [
+            lowest = [
                 ['1h', ...findLowestTimeSpan(prices, 1)],
                 ['2h', ...findLowestTimeSpan(prices, 2)],
                 ['3h', ...findLowestTimeSpan(prices, 3)],
                 ['4h', ...findLowestTimeSpan(prices, 4)],
             ]
 
-            console.log(lowest);
-
-            const data = google.visualization.arrayToDataTable([
+            data = google.visualization.arrayToDataTable([
                 [
                     'Tund',
                     'Elektriaktsiis',
@@ -66,7 +71,7 @@
                 ...prices
             ])
 
-            const options = {
+            options = google.charts.Bar.convertOptions({
                 isStacked: true,
                 bars: 'vertical',
                 legend: {
@@ -76,11 +81,10 @@
                     x: { 0: { label: ''} },
                     y: { 0: { label: ''} }
                 }
-            }
-            const chartDiv = document.getElementById('chart')
-            const lowestDiv = document.getElementById('lowest')
+            })
 
-            new google.charts.Bar(chartDiv).draw(data, google.charts.Bar.convertOptions(options))
+            new google.charts.Bar(chartDiv).draw(data, options)
+
             lowestDiv.innerHTML = lowest.map((x) => `
                 <div class="flex flex-col gap-2 items-center">
                     <div class="font-bold text-blue-400">
@@ -92,6 +96,10 @@
                     </div>
                 </div>
             `).join('')
+        })
+
+        window.addEventListener('resize', function () {
+            new google.charts.Bar(chartDiv).draw(data, options)
         })
 
         function findLowestTimeSpan(prices, span) {
