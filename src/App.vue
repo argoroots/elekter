@@ -106,6 +106,7 @@ function findLowestTimeSpan (prices, span) {
 
   <main class="flex flex-col gap-20">
     <GChart
+      v-if="data"
       class="h-96"
       type="ColumnChart"
       :data="data"
