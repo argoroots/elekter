@@ -20,7 +20,7 @@ const options = ref({
     left: 30,
     top: 5,
     width: '100%',
-    height: '90%'
+    height: '88%'
   },
   focusTarget: 'category',
   fontName: 'ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, "Noto Sans", sans-serif, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol", "Noto Color Emoji"',
@@ -156,10 +156,10 @@ function findLowestTimeSpan (prices, span) {
     </h1>
   </header>
 
-  <main class="flex flex-col gap-20">
+  <main class="flex flex-col gap-8 md:gap-20">
     <GChart
       v-if="data"
-      class="h-96"
+      class="h-60 md:h-96"
       type="ColumnChart"
       :data="data"
       :options="options"
@@ -168,7 +168,7 @@ function findLowestTimeSpan (prices, span) {
 
     <div
       v-if="lowest"
-      class="grid grid-cols-1 sm:grid-cols-4 gap-20 justify-between"
+      class="grid grid-cols-2 md:grid-cols-4 gap-4 lg:gap-20 justify-between"
     >
       <div
         v-for="x in lowest"
@@ -194,7 +194,7 @@ function findLowestTimeSpan (prices, span) {
 
     <div class="flex items-center justify-center">
       <Listbox v-model="selectedPlan">
-        <div class="relative">
+        <div class="relative w-full sm:w-auto">
           <ListboxButton
             class="relative w-full cursor-default rounded-lg border bg-white py-2 pl-3 pr-10 text-left focus:outline-none focus-visible:border-indigo-500 focus-visible:ring-2 focus-visible:ring-white focus-visible:ring-opacity-75 focus-visible:ring-offset-2 focus-visible:ring-offset-blue-300 sm:text-sm"
           >
