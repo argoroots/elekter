@@ -9,7 +9,7 @@ body,
 }
 
 #app {
-  @apply container my-20 mx-auto px-10 flex flex-col gap-20;
+  @apply container my-10 sm:my-20 mx-auto px-10 flex flex-col gap-20;
   @apply bg-white;
   @apply antialiased;
   color: rgb(117, 117, 117);
