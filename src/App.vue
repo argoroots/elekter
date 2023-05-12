@@ -216,7 +216,7 @@ function findLowestTimeSpan (prices, span) {
             leave-to-class="opacity-0"
           >
             <ListboxOptions
-              class="absolute mt-1 max-h-60 w-full overflow-auto rounded-md bg-white py-1 ring-1 ring-black ring-opacity-5 focus:outline-none sm:text-sm"
+              class="absolute bottom-11 max-h-60 w-full overflow-auto rounded-md bg-white py-1 ring-1 ring-black ring-opacity-5 focus:outline-none sm:text-sm"
             >
               <ListboxOption
                 v-for="plan in plans"
@@ -254,7 +254,7 @@ function findLowestTimeSpan (prices, span) {
       </Listbox>
     </div>
 
-    <div class="italic text-sm text-center">
+    <div class="pb-2 italic text-sm text-center">
       Hinnad on koos käibemaksuga, sentides kilovatt-tunni kohta.
     </div>
   </main>
