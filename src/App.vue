@@ -103,7 +103,10 @@ watch(() => selectedLowest.value, (val) => {
   window.history.replaceState({}, '', `?${params.toString()}`)
 })
 
-onMounted(getPrices)
+onMounted(() => {
+  getPrices()
+  setInterval(() => { getPrices() }, 15 * 60 * 1000)
+})
 
 async function getPrices () {
   const response = await fetch('https://api.roots.ee/elekter?plan=' + selectedPlan.value.value)
