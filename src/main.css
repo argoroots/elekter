@@ -6,6 +6,7 @@ html,
 body,
 #app {
   @apply h-full w-full;
+  @apply select-none;
 }
 
 #app {
