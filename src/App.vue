@@ -141,7 +141,7 @@ function findLowestTimeSpan (prices, span) {
   return {
     start: prices[lowestSumIndex].at(0),
     startIndex: lowestSumIndex,
-    end: prices[lowestSumIndex + span].at(0),
+    end: prices[lowestSumIndex + span]?.at(0) || '01',
     endIndex: lowestSumIndex + span - 1,
     price: lowestSum / span
   }
