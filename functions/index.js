@@ -99,7 +99,7 @@ function getGridFee (date, service = 'V4') {
   }
 }
 
-exports.handler = async (event) => {
+async function main (args) {
   const start = new Date()
   const end = new Date()
 
@@ -110,7 +110,7 @@ exports.handler = async (event) => {
   const result = prices.map((p) => {
     const dt = changeTimeZone(new Date(p.timestamp * 1000), 'Europe/Tallinn')
     const price = Math.round(p.price * 10 * 1.2) / 10000
-    const gridFee = getGridFee(dt, event.queryStringParameters?.plan)
+    const gridFee = getGridFee(dt, args.plan)
     const renewableTax = 0.0149
     const excise = 0.0012
 
@@ -126,5 +126,5 @@ exports.handler = async (event) => {
     ]
   })
 
-  return result
+  return { body: result }
 }
