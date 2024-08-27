@@ -109,7 +109,7 @@ onMounted(() => {
 })
 
 async function getPrices () {
-  const response = await fetch('https://faas-fra1-afec6ce7.doserverless.co/api/v1/web/fn-97f69b9b-30c7-41dd-947b-f687dbc54ade/default/borsihind?plan=' + selectedPlan.value.value)
+  const response = await fetch(`https://borsihind.s3.eu-central-1.amazonaws.com/${selectedPlan.value.value}.json`)
   const responseJson = await response.json()
 
   prices.value = responseJson.map((x) => [
