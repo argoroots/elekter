@@ -109,7 +109,7 @@ onMounted(() => {
 })
 
 async function getPrices () {
-  const response = await fetch(`https://borsihind.s3.eu-central-1.amazonaws.com/${selectedPlan.value.value}.json`)
+  const response = await fetch(`https://argoroots-public.s3.eu-central-1.amazonaws.com/borsihind/${selectedPlan.value.value}.json`)
   const responseJson = await response.json()
 
   prices.value = responseJson.map((x) => [
