@@ -3,8 +3,15 @@ packages:
     functions:
       - name: importer
         binary: false
-        runtime: 'nodejs:20'
+        runtime: 'nodejs:18'
+        web: false
         limits:
           timeout: 10000
           memory: 256
           logs: 100
+        triggers:
+          - name: Run once every 10 minutes
+            sourceType: scheduler
+            sourceDetails:
+              cron: 0/10 * * * *
+              withBody:
