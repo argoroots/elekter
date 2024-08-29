@@ -3,7 +3,7 @@ packages:
     functions:
       - name: importer
         binary: false
-        runtime: 'nodejs:default'
+        runtime: 'nodejs:20'
         limits:
           timeout: 10000
           memory: 256
