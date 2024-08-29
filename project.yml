@@ -8,10 +8,3 @@ packages:
           timeout: 10000
           memory: 256
           logs: 100
-        triggers:
-          - name: Run once every 10 minutes
-            web: false
-            sourceType: scheduler
-            sourceDetails:
-              cron: 0/10 * * * *
-              withBody:
