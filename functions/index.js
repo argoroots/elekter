@@ -1,4 +1,5 @@
 const http = require('https')
+const { S3Client, PutObjectCommand, PutObjectAclCommand, PutObjectTaggingCommand } = require('@aws-sdk/client-s3')
 
 function getPrices (start, end) {
   return new Promise((resolve, reject) => {
@@ -81,14 +82,12 @@ function getGridFee (date, service = 'V4') {
         } else {
           return plans.V5.night
         }
+      } else if (hours >= 22 || hours < 7) {
+        return plans.V5.night
+      } else if ([9, 10, 11, 16, 17, 18, 19].includes(hours)) {
+        return plans.V5.dayTop
       } else {
-        if (hours >= 22 || hours < 7) {
-          return plans.V5.night
-        } else if ([9, 10, 11, 16, 17, 18, 19].includes(hours)) {
-          return plans.V5.dayTop
-        } else {
-          return plans.V5.day
-        }
+        return plans.V5.day
       }
     default:
       if (holidays.includes(today) || day === 0 || day === 6 || hours >= 22 || hours < 7) {
@@ -99,18 +98,11 @@ function getGridFee (date, service = 'V4') {
   }
 }
 
-async function main (args) {
-  const start = new Date()
-  const end = new Date()
-
-  end.setDate(end.getDate() + 3)
-
-  const prices = await getPrices(start, end)
-
+async function saveJSON (prices, plan) {
   const result = prices.map((p) => {
     const dt = changeTimeZone(new Date(p.timestamp * 1000), 'Europe/Tallinn')
     const price = Math.round(p.price * 10 * 1.22) / 10000
-    const gridFee = getGridFee(dt, args.plan)
+    const gridFee = getGridFee(dt, plan)
     const renewableTax = 0.0128
     const excise = 0.0018
 
@@ -126,5 +118,51 @@ async function main (args) {
     ]
   })
 
-  return { body: result }
+  const jsonResult = JSON.stringify(result)
+  const bucketName = 'argoroots-public'
+  const key = `borsihind/${plan}.json`
+
+  const s3Client = new S3Client({
+    region: process.env.S3_REGION,
+    credentials: {
+      accessKeyId: process.env.S3_ACCESS_KEY,
+      secretAccessKey: process.env.S3_SECRET_KEY
+    }
+  })
+
+  await s3Client.send(new PutObjectCommand({
+    Bucket: bucketName,
+    Key: key,
+    Body: jsonResult,
+    ContentType: 'application/json'
+  }))
+
+  await s3Client.send(new PutObjectAclCommand({
+    Bucket: bucketName,
+    Key: key,
+    ACL: 'public-read'
+  }))
+
+  await s3Client.send(new PutObjectTaggingCommand({
+    Bucket: bucketName,
+    Key: key,
+    Tagging: {
+      TagSet: [{ Key: 'Project', Value: 'borsihind' }]
+    }
+  }))
+}
+
+async function main (args) {
+  const plans = ['V1', 'V2', 'V2k', 'V4', 'V5']
+  const start = new Date()
+  const end = new Date()
+  end.setDate(end.getDate() + 3)
+
+  const prices = await getPrices(start, end)
+
+  for (const plan of plans) {
+    await saveJSON(prices, plan)
+  }
+
+  return { ok: true }
 }
