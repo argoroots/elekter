@@ -7,7 +7,6 @@ import { CheckIcon, ChevronUpDownIcon } from '@heroicons/vue/20/solid'
 const plans = [
   { value: 'V1', label: 'Võrk 1' },
   { value: 'V2', label: 'Võrk 2' },
-  { value: 'V2k', label: 'Võrk 2 kuutasuga' },
   { value: 'V4', label: 'Võrk 4' },
   { value: 'V5', label: 'Võrk 5' }
 ]
