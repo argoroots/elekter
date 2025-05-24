@@ -99,8 +99,8 @@ async function saveJSON (prices, plan) {
     const dt = changeTimeZone(new Date(p.timestamp * 1000), 'Europe/Tallinn')
     const price = Math.round(p.price * 10 * 1.22) / 10000
     const gridFee = getGridFee(dt, plan)
-    const renewableTax = 0.0128
-    const excise = 0.0018
+    const renewableTax = 0.0102
+    const excise = 0.0026
 
     return [
       dt.getFullYear(),
