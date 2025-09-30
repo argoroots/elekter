@@ -19,13 +19,18 @@ const options = ref({
     left: 30,
     top: 5,
     width: '100%',
-    height: '88%'
+    height: '80%'
   },
   focusTarget: 'category',
   fontName: 'ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, "Noto Sans", sans-serif, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol", "Noto Color Emoji"',
   fontSize: 13,
   isStacked: true,
   legend: { position: 'none' },
+  hAxis: {
+    slantedText: true,
+    slantedTextAngle: 90,
+    showTextEvery: 4
+  },
   series: {
     0: { color: '#3b82f6' },
     1: { color: '#60a5fa' },
