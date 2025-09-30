@@ -137,10 +137,17 @@ function findLowestTimeSpan (prices, span) {
     }
   }
 
+  // Calculate end time by adding 15 minutes to the last interval in the span
+  const lastIntervalTime = prices[lowestSumIndex + span - 1]?.at(0) || '01:00'
+  const [hours, minutes] = lastIntervalTime.split(':').map(Number)
+  const endTime = new Date()
+  endTime.setHours(hours, minutes + 15, 0, 0)
+  const endTimeStr = endTime.getHours().toString().padStart(2, '0') + ':' + endTime.getMinutes().toString().padStart(2, '0')
+
   return {
     start: prices[lowestSumIndex].at(0),
     startIndex: lowestSumIndex,
-    end: prices[lowestSumIndex + span]?.at(0) || '01',
+    end: endTimeStr,
     endIndex: lowestSumIndex + span - 1,
     price: lowestSum / span
   }
