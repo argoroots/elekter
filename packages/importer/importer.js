@@ -33,10 +33,10 @@ async function getPrices () {
     console.error('Error fetching prices for next day:', error)
   }
 
-  // Filter out past hours - only keep current hour and future hours
+  // Filter out past 15-minute intervals - only keep current interval and future intervals
   const now = new Date()
-  const currentHour = new Date(now.getFullYear(), now.getMonth(), now.getDate(), now.getHours())
-  return allEntries.filter(entry => new Date(entry.deliveryStart) >= currentHour)
+  const currentInterval = new Date(now.getFullYear(), now.getMonth(), now.getDate(), now.getHours(), Math.floor(now.getMinutes() / 15) * 15)
+  return allEntries.filter(entry => new Date(entry.deliveryStart) >= currentInterval)
 }
 
 function changeTimeZone (date, timeZone) {
@@ -121,6 +121,7 @@ async function saveJSON (prices, plan) {
       dt.getMonth() + 1,
       dt.getDate(),
       dt.getHours(),
+      dt.getMinutes(),
       price,
       gridFee,
       renewableTax,

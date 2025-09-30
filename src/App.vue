@@ -41,7 +41,7 @@ const data = computed(() => {
   if (startIndex >= 0 && endIndex >= 0) {
     return [
       [
-        'Tund',
+        'Aeg',
         'Elektriaktsiis',
         { role: 'style' },
         'Taastuvenergia tasu',
@@ -65,7 +65,7 @@ const data = computed(() => {
   } else {
     return [
       [
-        'Tund',
+        'Aeg',
         'Elektriaktsiis',
         'Taastuvenergia tasu',
         'Elektri edastamine',
@@ -77,10 +77,10 @@ const data = computed(() => {
 })
 
 const lowest = computed(() => prices.value && [
-  { value: '1h', ...findLowestTimeSpan(prices.value, 1) },
-  { value: '2h', ...findLowestTimeSpan(prices.value, 2) },
-  { value: '3h', ...findLowestTimeSpan(prices.value, 3) },
-  { value: '4h', ...findLowestTimeSpan(prices.value, 4) }
+  { value: '1h', ...findLowestTimeSpan(prices.value, 4) },
+  { value: '2h', ...findLowestTimeSpan(prices.value, 8) },
+  { value: '3h', ...findLowestTimeSpan(prices.value, 12) },
+  { value: '4h', ...findLowestTimeSpan(prices.value, 16) }
 ])
 
 watch(() => selectedPlan.value, (val) => {
@@ -112,11 +112,11 @@ async function getPrices () {
   const responseJson = await response.json()
 
   prices.value = responseJson.map((x) => [
-    x.at(3).toString().padStart(2, '0'),
+    x.at(3).toString().padStart(2, '0') + ':' + x.at(4).toString().padStart(2, '0'),
+    x.at(8) * 100,
     x.at(7) * 100,
     x.at(6) * 100,
-    x.at(5) * 100,
-    x.at(4) * 100
+    x.at(5) * 100
   ])
 }
 
@@ -183,7 +183,7 @@ function findLowestTimeSpan (prices, span) {
           {{ x.value }}
         </div>
 
-        {{ x.start }}.00 – {{ x.end }}.00
+        {{ x.start }} – {{ x.end }}
 
         <div
           class="mt-1 py-1 px-2 text-xs text-green-600 border rounded"
