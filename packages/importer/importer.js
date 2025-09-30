@@ -1,28 +1,42 @@
-const http = require('https')
 const { S3Client, PutObjectCommand, PutObjectAclCommand, PutObjectTaggingCommand } = require('@aws-sdk/client-s3')
 
-function getPrices (start, end) {
-  return new Promise((resolve, reject) => {
-    const url = `https://dashboard.elering.ee/api/nps/price?start=${start.toISOString().substring(0, 13)}:00:00.000Z&end=${end.toISOString().substring(0, 13)}:00:00.000Z`
+async function getPrices () {
+  const start = new Date()
+  const currentDate = start.toISOString().substring(0, 10)
+  const nextDate = new Date(start)
+  nextDate.setDate(nextDate.getDate() + 1)
+  const nextDateStr = nextDate.toISOString().substring(0, 10)
 
-    http.get(url, (response) => {
-      let body = ''
+  const allEntries = []
 
-      response.on('data', function (d) {
-        body += d
-      })
+  // Make request for current day
+  try {
+    const currentResponse = await fetch(`https://dataportal-api.nordpoolgroup.com/api/DayAheadPrices?currency=EUR&market=DayAhead&deliveryArea=EE&date=${currentDate}`)
+    const currentData = await currentResponse.json()
 
-      response.on('end', function () {
-        try {
-          resolve(JSON.parse(body).data.ee)
-        } catch (e) {
-          console.log(body)
-          console.error(e)
-          resolve([])
-        }
-      })
-    })
-  })
+    if (currentData?.multiAreaEntries) {
+      allEntries.push(...currentData.multiAreaEntries)
+    }
+  } catch (error) {
+    console.error('Error fetching prices for current day:', error)
+  }
+
+  // Make request for next day
+  try {
+    const nextResponse = await fetch(`https://dataportal-api.nordpoolgroup.com/api/DayAheadPrices?currency=EUR&market=DayAhead&deliveryArea=EE&date=${nextDateStr}`)
+    const nextData = await nextResponse.json()
+
+    if (nextData?.multiAreaEntries) {
+      allEntries.push(...nextData.multiAreaEntries)
+    }
+  } catch (error) {
+    console.error('Error fetching prices for next day:', error)
+  }
+
+  // Filter out past hours - only keep current hour and future hours
+  const now = new Date()
+  const currentHour = new Date(now.getFullYear(), now.getMonth(), now.getDate(), now.getHours())
+  return allEntries.filter(entry => new Date(entry.deliveryStart) >= currentHour)
 }
 
 function changeTimeZone (date, timeZone) {
@@ -96,8 +110,8 @@ function getGridFee (date, service = 'V4') {
 
 async function saveJSON (prices, plan) {
   const result = prices.map((p) => {
-    const dt = changeTimeZone(new Date(p.timestamp * 1000), 'Europe/Tallinn')
-    const price = Math.round(p.price * 10 * 1.24) / 10000
+    const dt = changeTimeZone(new Date(p.deliveryStart), 'Europe/Tallinn')
+    const price = Math.round(p.entryPerArea.EE * 1.24 / 1000 * 10000) / 10000
     const gridFee = getGridFee(dt, plan)
     const renewableTax = 0.0104
     const excise = 0.0026
@@ -148,13 +162,15 @@ async function saveJSON (prices, plan) {
   }))
 }
 
-async function main (args) {
+async function main () {
   const plans = ['V1', 'V2', 'V4', 'V5']
-  const start = new Date()
-  const end = new Date()
-  end.setDate(end.getDate() + 3)
 
-  const prices = await getPrices(start, end)
+  const prices = await getPrices()
+
+  if (prices.length === 0) {
+    console.log('No prices data available, skipping file write')
+    return { ok: false, message: 'No data to save' }
+  }
 
   for (const plan of plans) {
     await saveJSON(prices, plan)
