@@ -1,8 +1,10 @@
 <script setup>
 import { computed, onMounted, ref, watch } from 'vue'
 import { GChart } from 'vue-google-charts'
-import { Listbox, ListboxButton, ListboxOptions, ListboxOption } from '@headlessui/vue'
-import { CheckIcon, ChevronUpDownIcon } from '@heroicons/vue/20/solid'
+import { useChartTooltip } from './composables/useChartTooltip.js'
+import AppSelect from './components/AppSelect.vue'
+
+const { createTooltip } = useChartTooltip()
 
 // Constants
 const plans = [
@@ -15,11 +17,14 @@ const intervals = [
   { value: '15min', label: '15 minutit' },
   { value: '1h', label: '1 tund' }
 ]
+const blueColors = ['#3b82f6', '#60a5fa', '#93c5fd', '#bfdbfe', '#dbeafe']
+const greenColors = ['#059669', '#10b981', '#34d399', '#6ee7b7', '#a7f3d0']
 
 // Refs
 const selectedPlan = ref(plans.find(x => x.value === (new URLSearchParams(window.location.search).get('plan') || 'V1')))
 const selectedInterval = ref(intervals.find(x => x.value === (new URLSearchParams(window.location.search).get('interval') || '15min')))
 const selectedLowest = ref(new URLSearchParams(window.location.search).get('lowest') || null)
+const marginal = ref(parseFloat(new URLSearchParams(window.location.search).get('marginal') || '0'))
 const prices = ref()
 const rawPrices = ref()
 
@@ -31,6 +36,7 @@ const options = computed(() => ({
   chartArea: {
     left: 30,
     top: 5,
+    bottom: 40,
     width: '100%',
     height: '80%'
   },
@@ -39,58 +45,58 @@ const options = computed(() => ({
   fontSize: 13,
   isStacked: true,
   legend: { position: 'none' },
+  tooltip: { isHtml: true },
   hAxis: {
     slantedText: false,
     slantedTextAngle: 0
-  },
-  series: {
-    0: { color: '#3b82f6' },
-    1: { color: '#60a5fa' },
-    2: { color: '#93c5fd' },
-    3: { color: '#bfdbfe' }
   }
 }))
 
 const data = computed(() => {
   if (!prices.value) return
-  const { startIndex, endIndex } = selectedLowest.value ? lowest.value.find(x => x.value === selectedLowest.value) : {}
 
-  if (startIndex >= 0 && endIndex >= 0) {
+  const { startIndex, endIndex } = selectedLowest.value ? lowest.value.find(x => x.value === selectedLowest.value) : {}
+  const marginalValue = marginal.value || 0
+  const hasSelection = startIndex >= 0 && endIndex >= 0
+
+  const header = [
+    'Aeg',
+    { type: 'string', role: 'tooltip', p: { html: true } },
+    'Müüa marginaal',
+    { role: 'style' },
+    'Elektriaktsiis',
+    { role: 'style' },
+    'Taastuvenergia tasu',
+    { role: 'style' },
+    'Elektri edastamine',
+    { role: 'style' },
+    'Elektri hind',
+    { role: 'style' }
+  ]
+
+  const rows = prices.value.map((x, idx) => {
+    const time = Array.isArray(x) ? x[0] : x.at(0)
+    const priceData = Array.isArray(x) ? [x[1], x[2], x[3], x[4]] : [x.at(1), x.at(2), x.at(3), x.at(4)]
+    const isSelected = hasSelection && idx >= startIndex && idx <= endIndex
+    const colors = isSelected ? greenColors : blueColors
+
     return [
-      [
-        'Aeg',
-        'Elektriaktsiis',
-        { role: 'style' },
-        'Taastuvenergia tasu',
-        { role: 'style' },
-        'Elektri edastamine',
-        { role: 'style' },
-        'Elektri hind',
-        { role: 'style' }
-      ],
-      ...prices.value.map((x, idx) => [
-        formatLabelForChart(x.at(0)),
-        x.at(1),
-        idx >= startIndex && idx <= endIndex ? '#10b981' : null,
-        x.at(2),
-        idx >= startIndex && idx <= endIndex ? '#34d399' : null,
-        x.at(3),
-        idx >= startIndex && idx <= endIndex ? '#6ee7b7' : null,
-        x.at(4),
-        idx >= startIndex && idx <= endIndex ? '#a7f3d0' : null
-      ])]
-  } else {
-    return [
-      [
-        'Aeg',
-        'Elektriaktsiis',
-        'Taastuvenergia tasu',
-        'Elektri edastamine',
-        'Elektri hind'
-      ],
-      ...prices.value.map(x => [formatLabelForChart(x[0]), x[1], x[2], x[3], x[4]])
+      formatLabelForChart(time),
+      createTooltip(time, priceData, marginalValue, colors, is1h.value),
+      marginalValue,
+      colors[0],
+      priceData[0],
+      colors[1],
+      priceData[1],
+      colors[2],
+      priceData[2],
+      colors[3],
+      priceData[3],
+      colors[4]
     ]
-  }
+  })
+
+  return [header, ...rows]
 })
 
 const lowest = computed(() => {
@@ -113,7 +119,8 @@ watch(() => selectedPlan.value, (val) => {
   const params = new URLSearchParams({
     plan: val.value,
     interval: selectedInterval.value.value,
-    lowest: selectedLowest.value || ''
+    lowest: selectedLowest.value || '',
+    marginal: marginal.value.toString()
   })
   window.history.replaceState({}, '', `?${params.toString()}`)
 })
@@ -124,7 +131,8 @@ watch(() => selectedInterval.value, (val) => {
   const params = new URLSearchParams({
     plan: selectedPlan.value.value,
     interval: val.value,
-    lowest: selectedLowest.value || ''
+    lowest: selectedLowest.value || '',
+    marginal: marginal.value.toString()
   })
   window.history.replaceState({}, '', `?${params.toString()}`)
 })
@@ -134,7 +142,18 @@ watch(() => selectedLowest.value, (val) => {
   const params = new URLSearchParams({
     plan: selectedPlan.value.value,
     interval: selectedInterval.value.value,
-    lowest: val || ''
+    lowest: val || '',
+    marginal: marginal.value.toString()
+  })
+  window.history.replaceState({}, '', `?${params.toString()}`)
+})
+
+watch(() => marginal.value, (val) => {
+  const params = new URLSearchParams({
+    plan: selectedPlan.value.value,
+    interval: selectedInterval.value.value,
+    lowest: selectedLowest.value || '',
+    marginal: val.toString()
   })
   window.history.replaceState({}, '', `?${params.toString()}`)
 })
@@ -316,7 +335,10 @@ function findLowestTimeSpan (prices, span) {
         :class="{ 'border-green-300 bg-green-50': selectedLowest === x.value, 'border-transparent': selectedLowest !== x.value }"
         @click="selectedLowest = selectedLowest !== x.value ? x.value : null"
       >
-        <div class="font-bold text-blue-400">
+        <div
+          class="font-bold"
+          :class="{ 'text-green-600': selectedLowest === x.value, 'text-blue-400': selectedLowest !== x.value }"
+        >
           {{ x.value }}
         </div>
 
@@ -332,111 +354,29 @@ function findLowestTimeSpan (prices, span) {
     </div>
 
     <div class="flex flex-col sm:flex-row gap-4 items-center justify-center">
-      <Listbox v-model="selectedInterval">
-        <div class="relative w-full sm:w-auto">
-          <ListboxButton
-            class="relative w-full cursor-default rounded-lg border bg-white py-2 pl-3 pr-10 text-left focus:outline-none focus-visible:border-indigo-500 focus-visible:ring-2 focus-visible:ring-white focus-visible:ring-opacity-75 focus-visible:ring-offset-2 focus-visible:ring-offset-blue-300 sm:text-sm"
-          >
-            <span class="block truncate">Intervall: {{ selectedInterval.label }}</span>
-            <span class="pointer-events-none absolute inset-y-0 right-0 flex items-center pr-2">
-              <ChevronUpDownIcon
-                class="h-5 w-5 text-gray-400"
-                aria-hidden="true"
-              />
-            </span>
-          </ListboxButton>
+      <AppSelect
+        v-model="selectedInterval"
+        :options="intervals"
+        label="Intervall: "
+      />
 
-          <transition
-            leave-active-class="transition duration-100 ease-in"
-            leave-from-class="opacity-100"
-            leave-to-class="opacity-0"
+      <AppSelect
+        v-model="selectedPlan"
+        :options="plans"
+        label="Elektrilevi võrguteenus: "
+      />
+
+      <div class="relative w-full sm:w-auto">
+        <div class="flex items-center rounded-lg border bg-white h-[38px] px-3 focus-within:border-indigo-500 focus-within:ring-2 focus-within:ring-white focus-within:ring-opacity-75 focus-within:ring-offset-2 focus-within:ring-offset-blue-300 sm:text-sm">
+          <label class="mr-2">Marginaal:</label>
+          <input
+            v-model.number="marginal"
+            type="number"
+            step="0.1"
+            class="w-20 focus:outline-none bg-transparent"
           >
-            <ListboxOptions
-              class="absolute bottom-11 max-h-60 w-full overflow-auto rounded-md bg-white py-1 ring-1 ring-black ring-opacity-5 focus:outline-none sm:text-sm"
-            >
-              <ListboxOption
-                v-for="interval in intervals"
-                v-slot="{ active, selected }"
-                :key="interval.value"
-                :value="interval"
-                as="template"
-              >
-                <li
-                  class="relative cursor-default select-none py-2 pl-10 pr-4"
-                  :class="{ 'bg-blue-100 text-blue-900': active }"
-                >
-                  <span
-                    class="block truncate"
-                    :class="{ 'font-medium': selected, 'font-normal': !selected }"
-                  >{{ interval.label }}</span>
-                  <span
-                    v-if="selected"
-                    class="absolute inset-y-0 left-0 flex items-center pl-3 text-blue-600"
-                  >
-                    <CheckIcon
-                      class="h-5 w-5"
-                      aria-hidden="true"
-                    />
-                  </span>
-                </li>
-              </ListboxOption>
-            </ListboxOptions>
-          </transition>
         </div>
-      </Listbox>
-
-      <Listbox v-model="selectedPlan">
-        <div class="relative w-full sm:w-auto">
-          <ListboxButton
-            class="relative w-full cursor-default rounded-lg border bg-white py-2 pl-3 pr-10 text-left focus:outline-none focus-visible:border-indigo-500 focus-visible:ring-2 focus-visible:ring-white focus-visible:ring-opacity-75 focus-visible:ring-offset-2 focus-visible:ring-offset-blue-300 sm:text-sm"
-          >
-            <span class="block truncate">Elektrilevi võrguteenus: {{ selectedPlan.label }}</span>
-            <span class="pointer-events-none absolute inset-y-0 right-0 flex items-center pr-2">
-              <ChevronUpDownIcon
-                class="h-5 w-5 text-gray-400"
-                aria-hidden="true"
-              />
-            </span>
-          </ListboxButton>
-
-          <transition
-            leave-active-class="transition duration-100 ease-in"
-            leave-from-class="opacity-100"
-            leave-to-class="opacity-0"
-          >
-            <ListboxOptions
-              class="absolute bottom-11 max-h-60 w-full overflow-auto rounded-md bg-white py-1 ring-1 ring-black ring-opacity-5 focus:outline-none sm:text-sm"
-            >
-              <ListboxOption
-                v-for="plan in plans"
-                v-slot="{ active, selected }"
-                :key="plan.label"
-                :value="plan"
-                as="template"
-              >
-                <li
-                  class="relative cursor-default select-none py-2 pl-10 pr-4"
-                  :class="{ 'bg-blue-100 text-blue-900': active }"
-                >
-                  <span
-                    class="block truncate"
-                    :class="{ 'font-medium': selected, 'font-normal': !selected }"
-                  >{{ plan.label }}</span>
-                  <span
-                    v-if="selected"
-                    class="absolute inset-y-0 left-0 flex items-center pl-3 text-blue-600"
-                  >
-                    <CheckIcon
-                      class="h-5 w-5"
-                      aria-hidden="true"
-                    />
-                  </span>
-                </li>
-              </ListboxOption>
-            </ListboxOptions>
-          </transition>
-        </div>
-      </Listbox>
+      </div>
     </div>
 
     <div class="pb-2 italic text-sm text-center">
