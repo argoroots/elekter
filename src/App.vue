@@ -62,7 +62,7 @@ const data = computed(() => {
   const header = [
     'Aeg',
     { type: 'string', role: 'tooltip', p: { html: true } },
-    'Müüa marginaal',
+    'Müüja marginaal',
     { role: 'style' },
     'Elektriaktsiis',
     { role: 'style' },
