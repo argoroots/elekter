@@ -8,12 +8,13 @@ export function useChartTooltip () {
     const endHours = hours + Math.floor(endMinutes / 60)
     const endMins = endMinutes % 60
     const endTime = `${String(endHours % 24).padStart(2, '0')}:${String(endMins).padStart(2, '0')}`
-    const total = marginalValue + priceData[0] + priceData[1] + priceData[2] + priceData[3]
+    const total = marginalValue + priceData[0] + priceData[1] + priceData[2] + priceData[3] + priceData[4]
 
     const rows = [
-      { label: 'Elektri hind:', value: priceData[3].toFixed(2), color: colors[4] },
-      { label: 'Elektri edastamine:', value: priceData[2].toFixed(2), color: colors[3] },
-      { label: 'Taastuvenergia tasu:', value: priceData[1].toFixed(2), color: colors[2] },
+      { label: 'Elektri hind:', value: priceData[3].toFixed(2), color: colors[5] },
+      { label: 'Elektri edastamine:', value: priceData[2].toFixed(2), color: colors[4] },
+      { label: 'Taastuvenergia tasu:', value: priceData[1].toFixed(2), color: colors[3] },
+      { label: 'Varustuskindluse tasu:', value: priceData[4].toFixed(2), color: colors[2] },
       { label: 'Elektriaktsiis:', value: priceData[0].toFixed(2), color: colors[1] },
       { label: 'Müüa marginaal:', value: marginalValue.toFixed(3), color: colors[0] }
     ]

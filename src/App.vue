@@ -17,8 +17,8 @@ const intervals = [
   { value: '15min', label: '15 minutit' },
   { value: '1h', label: '1 tund' }
 ]
-const blueColors = ['#3b82f6', '#60a5fa', '#93c5fd', '#bfdbfe', '#dbeafe']
-const greenColors = ['#059669', '#10b981', '#34d399', '#6ee7b7', '#a7f3d0']
+const blueColors = ['#eff6ff', '#dbeafe', '#bfdbfe', '#93c5fd', '#93c5fd', '#60a5fa']
+const greenColors = ['#d1fae5', '#a7f3d0', '#6ee7b7', '#34d399', '#34d399', '#10b981']
 
 // Refs
 const selectedPlan = ref(plans.find(x => x.value === (new URLSearchParams(window.location.search).get('plan') || 'V1')))
@@ -66,6 +66,8 @@ const data = computed(() => {
     { role: 'style' },
     'Elektriaktsiis',
     { role: 'style' },
+    'Varustuskindluse tasu',
+    { role: 'style' },
     'Taastuvenergia tasu',
     { role: 'style' },
     'Elektri edastamine',
@@ -76,7 +78,7 @@ const data = computed(() => {
 
   const rows = prices.value.map((x, idx) => {
     const time = Array.isArray(x) ? x[0] : x.at(0)
-    const priceData = Array.isArray(x) ? [x[1], x[2], x[3], x[4]] : [x.at(1), x.at(2), x.at(3), x.at(4)]
+    const priceData = Array.isArray(x) ? [x[1], x[2], x[3], x[4], x[5]] : [x.at(1), x.at(2), x.at(3), x.at(4), x.at(5)]
     const isSelected = hasSelection && idx >= startIndex && idx <= endIndex
     const colors = isSelected ? greenColors : blueColors
 
@@ -87,12 +89,14 @@ const data = computed(() => {
       colors[0],
       priceData[0],
       colors[1],
-      priceData[1],
+      priceData[4],
       colors[2],
-      priceData[2],
+      priceData[1],
       colors[3],
+      priceData[2],
+      colors[4],
       priceData[3],
-      colors[4]
+      colors[5]
     ]
   })
 
@@ -203,13 +207,15 @@ function aggregateToHourly (pricesData) {
         const avgRenewable = hourlyValues.reduce((sum, v) => sum + v[2], 0) / hourlyValues.length
         const avgTransmission = hourlyValues.reduce((sum, v) => sum + v[3], 0) / hourlyValues.length
         const avgPrice = hourlyValues.reduce((sum, v) => sum + v[4], 0) / hourlyValues.length
+        const avgSupplyFee = hourlyValues.reduce((sum, v) => sum + v[5], 0) / hourlyValues.length
 
         hourlyData.push([
           `${currentHour}:00`,
           avgExcise,
           avgRenewable,
           avgTransmission,
-          avgPrice
+          avgPrice,
+          avgSupplyFee
         ])
       }
 
@@ -226,13 +232,15 @@ function aggregateToHourly (pricesData) {
     const avgRenewable = hourlyValues.reduce((sum, v) => sum + v[2], 0) / hourlyValues.length
     const avgTransmission = hourlyValues.reduce((sum, v) => sum + v[3], 0) / hourlyValues.length
     const avgPrice = hourlyValues.reduce((sum, v) => sum + v[4], 0) / hourlyValues.length
+    const avgSupplyFee = hourlyValues.reduce((sum, v) => sum + v[5], 0) / hourlyValues.length
 
     hourlyData.push([
       `${currentHour}:00`,
       avgExcise,
       avgRenewable,
       avgTransmission,
-      avgPrice
+      avgPrice,
+      avgSupplyFee
     ])
   }
 
@@ -248,7 +256,8 @@ async function getPrices () {
     x.at(8) * 100,
     x.at(7) * 100,
     x.at(6) * 100,
-    x.at(5) * 100
+    x.at(5) * 100,
+    x.at(9) * 100
   ])
 
   updatePrices()
@@ -267,7 +276,7 @@ function updatePrices () {
 function findLowestTimeSpan (prices, span) {
   if (prices.length === 0) return []
 
-  const pricesSum = prices.map((x) => x.at(1) + x.at(2) + x.at(3) + x.at(4))
+  const pricesSum = prices.map((x) => x.at(1) + x.at(2) + x.at(3) + x.at(4) + x.at(5))
 
   let lowestSum = Infinity
   let lowestSumIndex = -1

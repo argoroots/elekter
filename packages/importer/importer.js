@@ -115,6 +115,7 @@ async function saveJSON (prices, plan) {
     const gridFee = getGridFee(dt, plan)
     const renewableTax = 0.0104
     const excise = 0.0026
+    const supplyFee = 0.0094
 
     return [
       dt.getFullYear(),
@@ -125,7 +126,8 @@ async function saveJSON (prices, plan) {
       price,
       gridFee,
       renewableTax,
-      excise
+      excise,
+      supplyFee
     ]
   })
 
