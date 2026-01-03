@@ -17,14 +17,15 @@ const intervals = [
   { value: '15min', label: '15 minutit' },
   { value: '1h', label: '1 tund' }
 ]
-const blueColors = ['#eff6ff', '#dbeafe', '#bfdbfe', '#93c5fd', '#93c5fd', '#60a5fa']
-const greenColors = ['#d1fae5', '#a7f3d0', '#6ee7b7', '#34d399', '#34d399', '#10b981']
+const blueColors = ['#1e40af', '#2563eb', '#3b82f6', '#60a5fa', '#93c5fd', '#bfdbfe', '#dbeafe']
+const greenColors = ['#065f46', '#047857', '#059669', '#10b981', '#34d399', '#6ee7b7', '#a7f3d0']
 
 // Refs
 const selectedPlan = ref(plans.find(x => x.value === (new URLSearchParams(window.location.search).get('plan') || 'V1')))
 const selectedInterval = ref(intervals.find(x => x.value === (new URLSearchParams(window.location.search).get('interval') || '15min')))
 const selectedLowest = ref(new URLSearchParams(window.location.search).get('lowest') || null)
 const marginal = ref(parseFloat(new URLSearchParams(window.location.search).get('marginal') || '0'))
+const monthlyFee = ref(parseFloat(new URLSearchParams(window.location.search).get('monthly') || '0'))
 const prices = ref()
 const rawPrices = ref()
 
@@ -36,9 +37,9 @@ const options = computed(() => ({
   chartArea: {
     left: 30,
     top: 5,
-    bottom: 40,
+    bottom: 60,
     width: '100%',
-    height: '80%'
+    height: '75%'
   },
   focusTarget: 'category',
   fontName: 'ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, "Noto Sans", sans-serif, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol", "Noto Color Emoji"',
@@ -48,7 +49,9 @@ const options = computed(() => ({
   tooltip: { isHtml: true },
   hAxis: {
     slantedText: false,
-    slantedTextAngle: 0
+    slantedTextAngle: 0,
+    textStyle: { fontSize: 11 },
+    showTextEvery: 1
   }
 }))
 
@@ -62,6 +65,8 @@ const data = computed(() => {
   const header = [
     'Aeg',
     { type: 'string', role: 'tooltip', p: { html: true } },
+    'Kuu tasu',
+    { role: 'style' },
     'Müüja marginaal',
     { role: 'style' },
     'Elektriaktsiis',
@@ -79,24 +84,34 @@ const data = computed(() => {
   const rows = prices.value.map((x, idx) => {
     const time = Array.isArray(x) ? x[0] : x.at(0)
     const priceData = Array.isArray(x) ? [x[1], x[2], x[3], x[4], x[5]] : [x.at(1), x.at(2), x.at(3), x.at(4), x.at(5)]
+    const year = Array.isArray(x) ? x[6] : x.at(6)
+    const month = Array.isArray(x) ? x[7] : x.at(7)
     const isSelected = hasSelection && idx >= startIndex && idx <= endIndex
     const colors = isSelected ? greenColors : blueColors
 
+    // Calculate monthly fee per hour based on this specific hour's month
+    const fee = monthlyFee.value || 0
+    const daysInMonth = new Date(year, month, 0).getDate()
+    const hoursInThisMonth = daysInMonth * 24
+    const monthlyFeeForThisHour = fee === 0 ? 0 : (fee * 100) / hoursInThisMonth
+
     return [
       formatLabelForChart(time),
-      createTooltip(time, priceData, marginalValue, colors, is1h.value),
-      marginalValue,
+      createTooltip(time, priceData, marginalValue, monthlyFeeForThisHour, colors, is1h.value),
+      monthlyFeeForThisHour,
       colors[0],
-      priceData[0],
+      marginalValue,
       colors[1],
-      priceData[4],
+      priceData[0],
       colors[2],
       priceData[1],
       colors[3],
       priceData[2],
       colors[4],
       priceData[3],
-      colors[5]
+      colors[5],
+      priceData[4],
+      colors[6]
     ]
   })
 
@@ -124,7 +139,8 @@ watch(() => selectedPlan.value, (val) => {
     plan: val.value,
     interval: selectedInterval.value.value,
     lowest: selectedLowest.value || '',
-    marginal: marginal.value.toString()
+    marginal: marginal.value.toString(),
+    monthly: monthlyFee.value.toString()
   })
   window.history.replaceState({}, '', `?${params.toString()}`)
 })
@@ -136,7 +152,8 @@ watch(() => selectedInterval.value, (val) => {
     plan: selectedPlan.value.value,
     interval: val.value,
     lowest: selectedLowest.value || '',
-    marginal: marginal.value.toString()
+    marginal: marginal.value.toString(),
+    monthly: monthlyFee.value.toString()
   })
   window.history.replaceState({}, '', `?${params.toString()}`)
 })
@@ -147,7 +164,8 @@ watch(() => selectedLowest.value, (val) => {
     plan: selectedPlan.value.value,
     interval: selectedInterval.value.value,
     lowest: val || '',
-    marginal: marginal.value.toString()
+    marginal: marginal.value.toString(),
+    monthly: monthlyFee.value.toString()
   })
   window.history.replaceState({}, '', `?${params.toString()}`)
 })
@@ -157,7 +175,19 @@ watch(() => marginal.value, (val) => {
     plan: selectedPlan.value.value,
     interval: selectedInterval.value.value,
     lowest: selectedLowest.value || '',
-    marginal: val.toString()
+    marginal: val.toString(),
+    monthly: monthlyFee.value.toString()
+  })
+  window.history.replaceState({}, '', `?${params.toString()}`)
+})
+
+watch(() => monthlyFee.value, (val) => {
+  const params = new URLSearchParams({
+    plan: selectedPlan.value.value,
+    interval: selectedInterval.value.value,
+    lowest: selectedLowest.value || '',
+    marginal: marginal.value.toString(),
+    monthly: val.toString()
   })
   window.history.replaceState({}, '', `?${params.toString()}`)
 })
@@ -208,6 +238,7 @@ function aggregateToHourly (pricesData) {
         const avgTransmission = hourlyValues.reduce((sum, v) => sum + v[3], 0) / hourlyValues.length
         const avgPrice = hourlyValues.reduce((sum, v) => sum + v[4], 0) / hourlyValues.length
         const avgSupplyFee = hourlyValues.reduce((sum, v) => sum + v[5], 0) / hourlyValues.length
+        const firstValue = hourlyValues[0]
 
         hourlyData.push([
           `${currentHour}:00`,
@@ -215,7 +246,10 @@ function aggregateToHourly (pricesData) {
           avgRenewable,
           avgTransmission,
           avgPrice,
-          avgSupplyFee
+          avgSupplyFee,
+          firstValue[6], // year
+          firstValue[7], // month
+          firstValue[8] // day
         ])
       }
 
@@ -233,6 +267,7 @@ function aggregateToHourly (pricesData) {
     const avgTransmission = hourlyValues.reduce((sum, v) => sum + v[3], 0) / hourlyValues.length
     const avgPrice = hourlyValues.reduce((sum, v) => sum + v[4], 0) / hourlyValues.length
     const avgSupplyFee = hourlyValues.reduce((sum, v) => sum + v[5], 0) / hourlyValues.length
+    const firstValue = hourlyValues[0]
 
     hourlyData.push([
       `${currentHour}:00`,
@@ -240,7 +275,10 @@ function aggregateToHourly (pricesData) {
       avgRenewable,
       avgTransmission,
       avgPrice,
-      avgSupplyFee
+      avgSupplyFee,
+      firstValue[6], // year
+      firstValue[7], // month
+      firstValue[8] // day
     ])
   }
 
@@ -253,11 +291,14 @@ async function getPrices () {
 
   rawPrices.value = responseJson.map((x) => [
     x.at(3).toString().padStart(2, '0') + ':' + x.at(4).toString().padStart(2, '0'),
-    x.at(8) * 100,
-    x.at(7) * 100,
-    x.at(6) * 100,
-    x.at(5) * 100,
-    x.at(9) * 100
+    x.at(8) * 100, // excise
+    x.at(9) * 100, // supply security fee
+    x.at(7) * 100, // renewable tax
+    x.at(6) * 100, // grid transmission
+    x.at(5) * 100, // electricity price
+    x.at(0), // year
+    x.at(1), // month
+    x.at(2) // day
   ])
 
   updatePrices()
@@ -381,7 +422,19 @@ function findLowestTimeSpan (prices, span) {
           <input
             v-model.number="marginal"
             type="number"
-            step="0.1"
+            step="0.01"
+            class="w-20 focus:outline-none bg-transparent"
+          >
+        </div>
+      </div>
+
+      <div class="relative w-full sm:w-auto">
+        <div class="flex items-center rounded-lg border bg-white h-[38px] px-3 focus-within:border-indigo-500 focus-within:ring-2 focus-within:ring-white focus-within:ring-opacity-75 focus-within:ring-offset-2 focus-within:ring-offset-blue-300 sm:text-sm">
+          <label class="mr-2">Kuu tasu:</label>
+          <input
+            v-model.number="monthlyFee"
+            type="number"
+            step="0.01"
             class="w-20 focus:outline-none bg-transparent"
           >
         </div>
