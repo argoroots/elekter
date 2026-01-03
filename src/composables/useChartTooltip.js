@@ -34,7 +34,7 @@ export function useChartTooltip () {
       { label: 'Varustuskindluse tasu:', value: priceData[1].toFixed(2), color: colors[3] },
       { label: 'Elektriaktsiis:', value: priceData[0].toFixed(2), color: colors[2] },
       { label: 'Müüja marginaal:', value: formatValue(marginalValue), color: colors[1] },
-      { label: 'Kuu tasu:', value: formatValue(monthlyFeePerHour), color: colors[0] }
+      { label: 'Kuutasu:', value: formatValue(monthlyFeePerHour), color: colors[0] }
     ]
 
     const vnode = h('div', { class: 'p-2 font-sans whitespace-nowrap' }, [

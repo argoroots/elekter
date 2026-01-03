@@ -65,7 +65,7 @@ const data = computed(() => {
   const header = [
     'Aeg',
     { type: 'string', role: 'tooltip', p: { html: true } },
-    'Kuu tasu',
+    'Kuutasu',
     { role: 'style' },
     'Müüja marginaal',
     { role: 'style' },
@@ -430,7 +430,7 @@ function findLowestTimeSpan (prices, span) {
 
       <div class="relative w-full sm:w-auto">
         <div class="flex items-center rounded-lg border bg-white h-[38px] px-3 focus-within:border-indigo-500 focus-within:ring-2 focus-within:ring-white focus-within:ring-opacity-75 focus-within:ring-offset-2 focus-within:ring-offset-blue-300 sm:text-sm">
-          <label class="mr-2">Kuu tasu:</label>
+          <label class="mr-2">Kuutasu:</label>
           <input
             v-model.number="monthlyFee"
             type="number"
