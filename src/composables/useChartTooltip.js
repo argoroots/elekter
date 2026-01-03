@@ -1,14 +1,14 @@
 import { h, render } from 'vue'
 
 export function useChartTooltip () {
-  function createTooltip (startTime, priceData, marginalValue, monthlyFeePerHour, colors, isHourly) {
+  function createTooltip (startTime, priceData, marginalValue, colors, isHourly) {
     const [hours, minutes] = startTime.split(':').map(Number)
     const intervalMinutes = isHourly ? 60 : 15
     const endMinutes = minutes + intervalMinutes
     const endHours = hours + Math.floor(endMinutes / 60)
     const endMins = endMinutes % 60
     const endTime = `${String(endHours % 24).padStart(2, '0')}:${String(endMins).padStart(2, '0')}`
-    const total = monthlyFeePerHour + marginalValue + priceData[0] + priceData[1] + priceData[2] + priceData[3] + priceData[4]
+    const total = marginalValue + priceData[0] + priceData[1] + priceData[2] + priceData[3] + priceData[4]
 
     // Determine decimal places from marginal value
     const getDecimalPlaces = (val) => {
@@ -28,13 +28,12 @@ export function useChartTooltip () {
     }
 
     const rows = [
-      { label: 'Elektri hind:', value: priceData[4].toFixed(2), color: colors[6] },
-      { label: 'Elektri edastamine:', value: priceData[3].toFixed(2), color: colors[5] },
-      { label: 'Taastuvenergia tasu:', value: priceData[2].toFixed(2), color: colors[4] },
-      { label: 'Varustuskindluse tasu:', value: priceData[1].toFixed(2), color: colors[3] },
-      { label: 'Elektriaktsiis:', value: priceData[0].toFixed(2), color: colors[2] },
-      { label: 'Müüja marginaal:', value: formatValue(marginalValue), color: colors[1] },
-      { label: 'Kuutasu:', value: formatValue(monthlyFeePerHour), color: colors[0] }
+      { label: 'Elektri hind:', value: priceData[4].toFixed(2), color: colors[5] },
+      { label: 'Elektri edastamine:', value: priceData[3].toFixed(2), color: colors[4] },
+      { label: 'Taastuvenergia tasu:', value: priceData[2].toFixed(2), color: colors[3] },
+      { label: 'Varustuskindluse tasu:', value: priceData[1].toFixed(2), color: colors[2] },
+      { label: 'Elektriaktsiis:', value: priceData[0].toFixed(2), color: colors[1] },
+      { label: 'Müüja marginaal:', value: formatValue(marginalValue), color: colors[0] }
     ]
 
     const vnode = h('div', { class: 'p-2 font-sans whitespace-nowrap' }, [

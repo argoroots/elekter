@@ -17,15 +17,14 @@ const intervals = [
   { value: '15min', label: '15 minutit' },
   { value: '1h', label: '1 tund' }
 ]
-const blueColors = ['#1e40af', '#2563eb', '#3b82f6', '#60a5fa', '#93c5fd', '#bfdbfe', '#dbeafe']
-const greenColors = ['#065f46', '#047857', '#059669', '#10b981', '#34d399', '#6ee7b7', '#a7f3d0']
+const blueColors = ['#1e40af', '#2563eb', '#3b82f6', '#60a5fa', '#93c5fd', '#bfdbfe']
+const greenColors = ['#065f46', '#047857', '#059669', '#10b981', '#34d399', '#6ee7b7']
 
 // Refs
 const selectedPlan = ref(plans.find(x => x.value === (new URLSearchParams(window.location.search).get('plan') || 'V1')))
 const selectedInterval = ref(intervals.find(x => x.value === (new URLSearchParams(window.location.search).get('interval') || '15min')))
 const selectedLowest = ref(new URLSearchParams(window.location.search).get('lowest') || null)
 const marginal = ref(parseFloat(new URLSearchParams(window.location.search).get('marginal') || '0'))
-const monthlyFee = ref(parseFloat(new URLSearchParams(window.location.search).get('monthly') || '0'))
 const prices = ref()
 const rawPrices = ref()
 
@@ -65,8 +64,6 @@ const data = computed(() => {
   const header = [
     'Aeg',
     { type: 'string', role: 'tooltip', p: { html: true } },
-    'Kuutasu',
-    { role: 'style' },
     'Müüja marginaal',
     { role: 'style' },
     'Elektriaktsiis',
@@ -89,29 +86,21 @@ const data = computed(() => {
     const isSelected = hasSelection && idx >= startIndex && idx <= endIndex
     const colors = isSelected ? greenColors : blueColors
 
-    // Calculate monthly fee per hour based on this specific hour's month
-    const fee = monthlyFee.value || 0
-    const daysInMonth = new Date(year, month, 0).getDate()
-    const hoursInThisMonth = daysInMonth * 24
-    const monthlyFeeForThisHour = fee === 0 ? 0 : (fee * 100) / hoursInThisMonth
-
     return [
       formatLabelForChart(time),
-      createTooltip(time, priceData, marginalValue, monthlyFeeForThisHour, colors, is1h.value),
-      monthlyFeeForThisHour,
-      colors[0],
+      createTooltip(time, priceData, marginalValue, colors, is1h.value),
       marginalValue,
-      colors[1],
+      colors[0],
       priceData[0],
-      colors[2],
+      colors[1],
       priceData[1],
-      colors[3],
+      colors[2],
       priceData[2],
-      colors[4],
+      colors[3],
       priceData[3],
-      colors[5],
+      colors[4],
       priceData[4],
-      colors[6]
+      colors[5]
     ]
   })
 
@@ -139,8 +128,7 @@ watch(() => selectedPlan.value, (val) => {
     plan: val.value,
     interval: selectedInterval.value.value,
     lowest: selectedLowest.value || '',
-    marginal: marginal.value.toString(),
-    monthly: monthlyFee.value.toString()
+    marginal: marginal.value.toString()
   })
   window.history.replaceState({}, '', `?${params.toString()}`)
 })
@@ -152,8 +140,7 @@ watch(() => selectedInterval.value, (val) => {
     plan: selectedPlan.value.value,
     interval: val.value,
     lowest: selectedLowest.value || '',
-    marginal: marginal.value.toString(),
-    monthly: monthlyFee.value.toString()
+    marginal: marginal.value.toString()
   })
   window.history.replaceState({}, '', `?${params.toString()}`)
 })
@@ -164,8 +151,7 @@ watch(() => selectedLowest.value, (val) => {
     plan: selectedPlan.value.value,
     interval: selectedInterval.value.value,
     lowest: val || '',
-    marginal: marginal.value.toString(),
-    monthly: monthlyFee.value.toString()
+    marginal: marginal.value.toString()
   })
   window.history.replaceState({}, '', `?${params.toString()}`)
 })
@@ -175,19 +161,7 @@ watch(() => marginal.value, (val) => {
     plan: selectedPlan.value.value,
     interval: selectedInterval.value.value,
     lowest: selectedLowest.value || '',
-    marginal: val.toString(),
-    monthly: monthlyFee.value.toString()
-  })
-  window.history.replaceState({}, '', `?${params.toString()}`)
-})
-
-watch(() => monthlyFee.value, (val) => {
-  const params = new URLSearchParams({
-    plan: selectedPlan.value.value,
-    interval: selectedInterval.value.value,
-    lowest: selectedLowest.value || '',
-    marginal: marginal.value.toString(),
-    monthly: val.toString()
+    marginal: val.toString()
   })
   window.history.replaceState({}, '', `?${params.toString()}`)
 })
@@ -421,18 +395,6 @@ function findLowestTimeSpan (prices, span) {
           <label class="mr-2">Marginaal:</label>
           <input
             v-model.number="marginal"
-            type="number"
-            step="0.01"
-            class="w-20 focus:outline-none bg-transparent"
-          >
-        </div>
-      </div>
-
-      <div class="relative w-full sm:w-auto">
-        <div class="flex items-center rounded-lg border bg-white h-[38px] px-3 focus-within:border-indigo-500 focus-within:ring-2 focus-within:ring-white focus-within:ring-opacity-75 focus-within:ring-offset-2 focus-within:ring-offset-blue-300 sm:text-sm">
-          <label class="mr-2">Kuutasu:</label>
-          <input
-            v-model.number="monthlyFee"
             type="number"
             step="0.01"
             class="w-20 focus:outline-none bg-transparent"
