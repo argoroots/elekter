@@ -48,9 +48,7 @@ const options = computed(() => ({
   tooltip: { isHtml: true },
   hAxis: {
     slantedText: false,
-    slantedTextAngle: 0,
-    textStyle: { fontSize: 11 },
-    showTextEvery: 1
+    slantedTextAngle: 0
   }
 }))
 
