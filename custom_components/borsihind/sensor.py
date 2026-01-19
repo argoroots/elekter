@@ -190,8 +190,8 @@ class BorsihindPlanSensor(BorsihindSensorBase):
     """Sensor for network package configuration."""
 
     _attr_name = "Network Package"
-    _attr_icon = "mdi:packagEntityCategory.DIAGNOSTIC
-    _attr_entity_category = "diagnostic"
+    _attr_icon = "mdi:package-variant"
+    _attr_entity_category = EntityCategory.DIAGNOSTIC
 
     def __init__(
         self,
