@@ -1,0 +1,11 @@
+{
+  "domain": "borsihind",
+  "name": "Börsihind.ee",
+  "codeowners": ["@argoroots"],
+  "config_flow": true,
+  "documentation": "https://github.com/argoroots/elekter",
+  "iot_class": "cloud_polling",
+  "issue_tracker": "https://github.com/argoroots/elekter/issues",
+  "requirements": [],
+  "version": "1.0.0"
+}

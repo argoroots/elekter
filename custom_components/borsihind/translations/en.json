@@ -1,0 +1,34 @@
+{
+  "config": {
+    "step": {
+      "user": {
+        "title": "Börsihind.ee",
+        "description": "Configure your electricity price integration",
+        "data": {
+          "plan": "Network package",
+          "interval": "Data interval",
+          "marginal": "Provider marginal (cents/kWh)"
+        }
+      }
+    },
+    "error": {
+      "cannot_connect": "Failed to connect to the API",
+      "unknown": "Unexpected error occurred"
+    },
+    "abort": {
+      "already_configured": "This network package is already configured"
+    }
+  },
+  "options": {
+    "step": {
+      "init": {
+        "title": "Update Configuration",
+        "description": "Update your provider's marginal and data interval",
+        "data": {
+          "interval": "Data interval",
+          "marginal": "Provider marginal (cents/kWh)"
+        }
+      }
+    }
+  }
+}
