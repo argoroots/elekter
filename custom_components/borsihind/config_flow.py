@@ -76,14 +76,14 @@ class ElektrilviOptionsFlow(config_entries.OptionsFlow):
             step_id="init",
             data_schema=vol.Schema(
                 {
-                    vol.OptioINTERVAL,
+                    vol.Optional(
+                        CONF_INTERVAL,
                         default=self.config_entry.options.get(
                             CONF_INTERVAL,
                             self.config_entry.data.get(CONF_INTERVAL, "15min"),
                         ),
                     ): vol.In(INTERVALS),
                     vol.Optional(
-                        CONF_nal(
                         CONF_MARGINAL,
                         default=self.config_entry.options.get(
                             CONF_MARGINAL,
