@@ -13,7 +13,7 @@ import homeassistant.helpers.config_validation as cv
 from .const import CONF_MARGINAL, CONF_PLAN, CONF_INTERVAL, DOMAIN, PLANS, INTERVALS
 
 
-class ElektrilviConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
+class BorsihindConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
     """Handle a config flow for Börsihind.ee."""
 
     VERSION = 1
@@ -53,12 +53,12 @@ class ElektrilviConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
     @callback
     def async_get_options_flow(
         config_entry: config_entries.ConfigEntry,
-    ) -> ElektrilviOptionsFlow:
+    ) -> BorsihindOptionsFlow:
         """Get the options flow for this handler."""
-        return ElektrilviOptionsFlow(config_entry)
+        return BorsihindOptionsFlow(config_entry)
 
 
-class ElektrilviOptionsFlow(config_entries.OptionsFlow):
+class BorsihindOptionsFlow(config_entries.OptionsFlow):
     """Handle options flow for Börsihind.ee."""
 
     async def async_step_init(

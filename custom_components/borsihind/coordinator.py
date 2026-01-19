@@ -17,7 +17,7 @@ from .const import API_URL, CONF_MARGINAL, CONF_PLAN, CONF_INTERVAL, DOMAIN, UPD
 _LOGGER = logging.getLogger(__name__)
 
 
-class ElektrilviCoordinator(DataUpdateCoordinator[dict[str, Any]]):
+class BorsihindCoordinator(DataUpdateCoordinator[dict[str, Any]]):
     """Class to manage fetching electricity price data."""
 
     def __init__(self, hass: HomeAssistant, entry: ConfigEntry) -> None:

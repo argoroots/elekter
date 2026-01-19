@@ -13,7 +13,7 @@ from homeassistant.helpers.entity_platform import AddEntitiesCallback
 from homeassistant.helpers.update_coordinator import CoordinatorEntity
 
 from .const import CONF_PLAN, DOMAIN, PLANS
-from .coordinator import ElektrilviCoordinator
+from .coordinator import BorsihindCoordinator
 
 
 async def async_setup_entry(
@@ -22,26 +22,26 @@ async def async_setup_entry(
     async_add_entities: AddEntitiesCallback,
 ) -> None:
     """Set up Börsihind.ee sensor entities."""
-    coordinator: ElektrilviCoordinator = hass.data[DOMAIN][entry.entry_id]
+    coordinator: BorsihindCoordinator = hass.data[DOMAIN][entry.entry_id]
 
     async_add_entities(
         [
-            ElektrilviCurrentPriceSensor(coordinator, entry),
-            ElektrilviAveragePriceSensor(coordinator, entry),
-            ElektrilviMinPriceSensor(coordinator, entry),
-            ElektrilviMaxPriceSensor(coordinator, entry),
+            BorsihindCurrentPriceSensor(coordinator, entry),
+            BorsihindAveragePriceSensor(coordinator, entry),
+            BorsihindMinPriceSensor(coordinator, entry),
+            BorsihindMaxPriceSensor(coordinator, entry),
         ]
     )
 
 
-class ElektrilviSensorBase(CoordinatorEntity[ElektrilviCoordinator], SensorEntity):
+class BorsihindSensorBase(CoordinatorEntity[BorsihindCoordinator], SensorEntity):
     """Base class for Börsihind.ee sensors."""
 
     _attr_has_entity_name = True
 
     def __init__(
         self,
-        coordinator: ElektrilviCoordinator,
+        coordinator: BorsihindCoordinator,
         entry: ConfigEntry,
     ) -> None:
         """Initialize the sensor."""
@@ -54,7 +54,7 @@ class ElektrilviSensorBase(CoordinatorEntity[ElektrilviCoordinator], SensorEntit
         }
 
 
-class ElektrilviCurrentPriceSensor(ElektrilviSensorBase):
+class BorsihindCurrentPriceSensor(BorsihindSensorBase):
     """Sensor for current electricity price."""
 
     _attr_name = "Current Price"
@@ -64,7 +64,7 @@ class ElektrilviCurrentPriceSensor(ElektrilviSensorBase):
 
     def __init__(
         self,
-        coordinator: ElektrilviCoordinator,
+        coordinator: BorsihindCoordinator,
         entry: ConfigEntry,
     ) -> None:
         """Initialize the sensor."""
@@ -104,7 +104,7 @@ class ElektrilviCurrentPriceSensor(ElektrilviSensorBase):
         }
 
 
-class ElektrilviAveragePriceSensor(ElektrilviSensorBase):
+class BorsihindAveragePriceSensor(BorsihindSensorBase):
     """Sensor for average future electricity price."""
 
     _attr_name = "Average Price"
@@ -114,7 +114,7 @@ class ElektrilviAveragePriceSensor(ElektrilviSensorBase):
 
     def __init__(
         self,
-        coordinator: ElektrilviCoordinator,
+        coordinator: BorsihindCoordinator,
         entry: ConfigEntry,
     ) -> None:
         """Initialize the sensor."""
@@ -130,7 +130,7 @@ class ElektrilviAveragePriceSensor(ElektrilviSensorBase):
         return None
 
 
-class ElektrilviMinPriceSensor(ElektrilviSensorBase):
+class BorsihindMinPriceSensor(BorsihindSensorBase):
     """Sensor for minimum future electricity price."""
 
     _attr_name = "Minimum Price"
@@ -140,7 +140,7 @@ class ElektrilviMinPriceSensor(ElektrilviSensorBase):
 
     def __init__(
         self,
-        coordinator: ElektrilviCoordinator,
+        coordinator: BorsihindCoordinator,
         entry: ConfigEntry,
     ) -> None:
         """Initialize the sensor."""
@@ -156,7 +156,7 @@ class ElektrilviMinPriceSensor(ElektrilviSensorBase):
         return None
 
 
-class ElektrilviMaxPriceSensor(ElektrilviSensorBase):
+class BorsihindMaxPriceSensor(BorsihindSensorBase):
     """Sensor for maximum future electricity price."""
 
     _attr_name = "Maximum Price"
@@ -166,7 +166,7 @@ class ElektrilviMaxPriceSensor(ElektrilviSensorBase):
 
     def __init__(
         self,
-        coordinator: ElektrilviCoordinator,
+        coordinator: BorsihindCoordinator,
         entry: ConfigEntry,
     ) -> None:
         """Initialize the sensor."""
