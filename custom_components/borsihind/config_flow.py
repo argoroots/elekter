@@ -55,7 +55,7 @@ class BorsihindConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
         config_entry: config_entries.ConfigEntry,
     ) -> BorsihindOptionsFlow:
         """Get the options flow for this handler."""
-        return BorsihindOptionsFlow(config_entry)
+        return BorsihindOptionsFlow()
 
 
 class BorsihindOptionsFlow(config_entries.OptionsFlow):
