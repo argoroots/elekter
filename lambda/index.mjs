@@ -1,7 +1,7 @@
 import { S3Client, PutObjectCommand, PutObjectAclCommand, PutObjectTaggingCommand } from '@aws-sdk/client-s3'
 
-const S3_BUCKET_NAME = 'borsihind'
 const S3_REGION = 'eu-central-1'
+const S3_BUCKET = 'borsihind'
 
 async function getPrices () {
   const start = new Date()
@@ -161,7 +161,7 @@ async function saveJSON (prices, plan, suffix = '') {
   })
 
   const jsonResult = JSON.stringify(result)
-  const bucketName = S3_BUCKET_NAME
+  const bucketName = S3_BUCKET
   const key = suffix ? `${suffix}/${plan}.json` : `${plan}.json`
 
   const s3Client = new S3Client({
@@ -211,7 +211,7 @@ export const handler = async (event) => {
     const pricesHourly = aggregateToHourly(prices15min)
 
     for (const plan of plans) {
-      await saveJSON(prices15min, plan, '/15min')
+      await saveJSON(prices15min, plan, '15min')
       await saveJSON(pricesHourly, plan, '')
     }
 
