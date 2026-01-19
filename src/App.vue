@@ -206,7 +206,7 @@ async function getPrices () {
 
     // Create date objects for comparison
     const priceDate = new Date(priceYear, priceMonth - 1, priceDay, priceHour, priceMinute)
-    const currentDate = is1h.value 
+    const currentDate = is1h.value
       ? new Date(now.getFullYear(), now.getMonth(), now.getDate(), currentHour, 0)
       : new Date(now.getFullYear(), now.getMonth(), now.getDate(), currentHour, currentInterval15)
 

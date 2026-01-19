@@ -39,10 +39,21 @@ class ElektrilviCoordinator(DataUpdateCoordinator[dict[str, Any]]):
             CONF_INTERVAL, self.entry.data.get(CONF_INTERVAL, "15min")
         )
 
+    @property
+    def marginal(self) -> float:
+        """Get marginal value from options or data."""
+        return self.entry.options.get(
+            CONF_MARGINAL, self.entry.data.get(CONF_MARGINAL, 0)
+        )
+
+    async def _async_update_data(self) -> dict[str, Any]:
+        """Fetch data from API."""
+        interval_path = "" if self.interval == "1h" else "15min/"
+        url = f"{API_URL}/{interval_path}{self.plan}.json"
+
         try:
             async with async_timeout.timeout(10):
-        interval_path = "" if self.interval == "1h" else "15min/"
-        url = f"{API_URL}/{interval_path}tp.ClientSession() as session:
+                async with aiohttp.ClientSession() as session:
                     async with session.get(url) as response:
                         if response.status != 200:
                             raise UpdateFailed(f"Error fetching data: {response.status}")
@@ -56,27 +67,29 @@ class ElektrilviCoordinator(DataUpdateCoordinator[dict[str, Any]]):
         """Process raw API data into usable format."""
         now = datetime.now()
         current_hour = now.hour
-        current_minute = now.minute for 15min data
+        current_minute = now.minute
         current_interval = (current_minute // 15) * 15
         is_1h = self.interval == "1h"
-        current_interval = (current_minute // 15) * 15
 
         prices = []
         for item in raw_data:
+            price_year = item[0]
+            price_month = item[1]
+            price_day = item[2]
             price_hour = item[3]
             price_minute = item[4]
 
-            # Filter: keep current time interval onwards
-            if is_1h:
-                # For 1h interval, keep current hour onwards
-                if price_hour < current_hour:
-                    continue
-            else:
-                # For 15min interval, keep current 15min interval onwards
-                if price_hour < current_hour:
-                    continue
-                if price_hour == current_hour and price_minute < current_interval:
-                    continue
+            # Create date objects for comparison
+            price_date = datetime(price_year, price_month, price_day, price_hour, price_minute)
+            current_date = datetime(
+                now.year, now.month, now.day,
+                current_hour,
+                0 if is_1h else current_interval
+            )
+
+            # Filter: keep entries that are at or after the current time
+            if price_date < current_date:
+                continue
 
             prices.append({
                 "time": f"{str(price_hour).zfill(2)}:{str(price_minute).zfill(2)}",
@@ -87,9 +100,9 @@ class ElektrilviCoordinator(DataUpdateCoordinator[dict[str, Any]]):
                 "renewable": item[7] * 100,
                 "transmission": item[6] * 100,
                 "electricity": item[5] * 100,
-                "year": item[0],
-                "month": item[1],
-                "day": item[2],
+                "year": price_year,
+                "month": price_month,
+                "day": price_day,
             })
 
         if not prices:
