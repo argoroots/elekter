@@ -198,22 +198,20 @@ async function getPrices () {
 
   // Filter data based on current time before processing
   prices.value = responseJson.filter((x) => {
+    const priceYear = x.at(0)
+    const priceMonth = x.at(1)
+    const priceDay = x.at(2)
     const priceHour = x.at(3)
     const priceMinute = x.at(4)
 
-    // For 1h interval, keep current hour onwards
-    if (is1h.value) {
-      return priceHour >= currentHour
-    }
+    // Create date objects for comparison
+    const priceDate = new Date(priceYear, priceMonth - 1, priceDay, priceHour, priceMinute)
+    const currentDate = is1h.value 
+      ? new Date(now.getFullYear(), now.getMonth(), now.getDate(), currentHour, 0)
+      : new Date(now.getFullYear(), now.getMonth(), now.getDate(), currentHour, currentInterval15)
 
-    // For 15min interval, keep current 15min interval onwards
-    if (priceHour > currentHour) {
-      return true
-    }
-    if (priceHour === currentHour) {
-      return priceMinute >= currentInterval15
-    }
-    return false
+    // Keep entries that are at or after the current time
+    return priceDate >= currentDate
   }).map((x) => [
     x.at(3).toString().padStart(2, '0') + ':' + x.at(4).toString().padStart(2, '0'),
     x.at(8) * 100, // excise
