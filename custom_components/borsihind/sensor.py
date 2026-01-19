@@ -30,6 +30,9 @@ async def async_setup_entry(
             BorsihindAveragePriceSensor(coordinator, entry),
             BorsihindMinPriceSensor(coordinator, entry),
             BorsihindMaxPriceSensor(coordinator, entry),
+            BorsihindPlanSensor(coordinator, entry),
+            BorsihindIntervalSensor(coordinator, entry),
+            BorsihindMarginalSensor(coordinator, entry),
         ]
     )
 
@@ -180,3 +183,76 @@ class BorsihindMaxPriceSensor(BorsihindSensorBase):
             # Convert from cents to euros
             return round(self.coordinator.data["max"] / 100, 4)
         return None
+
+
+class BorsihindPlanSensor(BorsihindSensorBase):
+    """Sensor for network package configuration."""
+
+    _attr_name = "Network Package"
+    _attr_icon = "mdi:package-variant"
+    _attr_entity_category = "diagnostic"
+
+    def __init__(
+        self,
+        coordinator: BorsihindCoordinator,
+        entry: ConfigEntry,
+    ) -> None:
+        """Initialize the sensor."""
+        super().__init__(coordinator, entry)
+        self._attr_unique_id = f"{entry.entry_id}_plan"
+
+    @property
+    def native_value(self) -> str | None:
+        """Return the network package."""
+        plan = self.coordinator.entry.options.get(
+            CONF_PLAN,
+            self.coordinator.entry.data.get(CONF_PLAN)
+        )
+        return f"{plan} - {PLANS.get(plan, plan)}" if plan else None
+
+
+class BorsihindIntervalSensor(BorsihindSensorBase):
+    """Sensor for data interval configuration."""
+
+    _attr_name = "Data Interval"
+    _attr_icon = "mdi:clock-outline"
+    _attr_entity_category = "diagnostic"
+
+    def __init__(
+        self,
+        coordinator: BorsihindCoordinator,
+        entry: ConfigEntry,
+    ) -> None:
+        """Initialize the sensor."""
+        super().__init__(coordinator, entry)
+        self._attr_unique_id = f"{entry.entry_id}_interval"
+
+    @property
+    def native_value(self) -> str | None:
+        """Return the data interval."""
+        return self.coordinator.interval
+
+
+class BorsihindMarginalSensor(BorsihindSensorBase):
+    """Sensor for provider marginal configuration."""
+
+    _attr_name = "Provider Marginal"
+    _attr_device_class = SensorDeviceClass.MONETARY
+    _attr_state_class = SensorStateClass.MEASUREMENT
+    _attr_native_unit_of_measurement = f"{CURRENCY_EURO}/{UnitOfEnergy.KILO_WATT_HOUR}"
+    _attr_entity_category = "diagnostic"
+
+    def __init__(
+        self,
+        coordinator: BorsihindCoordinator,
+        entry: ConfigEntry,
+    ) -> None:
+        """Initialize the sensor."""
+        super().__init__(coordinator, entry)
+        self._attr_unique_id = f"{entry.entry_id}_marginal"
+
+    @property
+    def native_value(self) -> float | None:
+        """Return the provider marginal."""
+        # Convert from cents to euros
+        return round(self.coordinator.marginal / 100, 4)
