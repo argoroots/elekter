@@ -1,7 +1,6 @@
 import { S3Client, PutObjectCommand, PutObjectAclCommand, PutObjectTaggingCommand } from '@aws-sdk/client-s3'
 
-const S3_BUCKET_NAME = 'argoroots-public'
-const S3_KEY_PREFIX = 'borsihind'
+const S3_BUCKET_NAME = 'borsihind'
 const S3_REGION = 'eu-central-1'
 
 async function getPrices () {
@@ -163,7 +162,7 @@ async function saveJSON (prices, plan, suffix = '') {
 
   const jsonResult = JSON.stringify(result)
   const bucketName = S3_BUCKET_NAME
-  const key = suffix ? `${S3_KEY_PREFIX}${suffix}/${plan}.json` : `${S3_KEY_PREFIX}/${plan}.json`
+  const key = suffix ? `${suffix}/${plan}.json` : `${plan}.json`
 
   const s3Client = new S3Client({
     region: S3_REGION

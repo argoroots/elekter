@@ -187,7 +187,7 @@ function formatLabelForChart (label) {
 
 async function getPrices () {
   const interval = is1h.value ? '' : '15min/'
-  const response = await fetch(`https://argoroots-public.s3.eu-central-1.amazonaws.com/borsihind/${interval}${selectedPlan.value.value}.json`)
+  const response = await fetch(`https://borsihind.s3.eu-central-1.amazonaws.com/${interval}${selectedPlan.value.value}.json`)
   const responseJson = await response.json()
 
   const now = new Date()
