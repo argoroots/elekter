@@ -19,7 +19,7 @@ Home Assistant integration for Estonian electricity exchange prices (Nord Pool) 
 2. Go to "Integrations"
 3. Click the three dots in the top right corner
 4. Select "Custom repositories"
-5. Add this repository URL: `https://github.com/argoroots/elekter`
+5. Add this repository URL: `https://github.com/argoroots/borsihind`
 6. Category: Integration
 7. Click "Add"
 8. Find "Börsihind.ee" and click "Download"
@@ -125,7 +125,7 @@ Nord Pool via `https://borsihind.s3.eu-central-1.amazonaws.com/`
 ## Support
 
 For issues, questions, or feature requests, please visit:
-- GitHub: https://github.com/argoroots/elekter/issues
+- GitHub: https://github.com/argoroots/borsihind/issues
 - Email: argo@roots.ee
 
 ## Credits

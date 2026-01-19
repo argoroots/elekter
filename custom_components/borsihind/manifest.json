@@ -3,9 +3,9 @@
   "name": "Börsihind.ee",
   "codeowners": ["@argoroots"],
   "config_flow": true,
-  "documentation": "https://github.com/argoroots/elekter",
+  "documentation": "https://github.com/argoroots/borsihind",
   "iot_class": "cloud_polling",
-  "issue_tracker": "https://github.com/argoroots/elekter/issues",
+  "issue_tracker": "https://github.com/argoroots/borsihind/issues",
   "requirements": [],
   "version": "1.0.0"
 }
