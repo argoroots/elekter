@@ -12,7 +12,7 @@ from homeassistant.core import HomeAssistant
 from homeassistant.helpers.entity_platform import AddEntitiesCallback
 from homeassistant.helpers.update_coordinator import CoordinatorEntity
 
-from .const import CONF_PLAN, DOMAIN, PLANS
+from .const import CONF_PLAN, DOMAIN, PLANS, INTERVALS
 from .coordinator import BorsihindCoordinator
 
 
