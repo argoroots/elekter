@@ -26,7 +26,6 @@ const selectedInterval = ref(intervals.find(x => x.value === (new URLSearchParam
 const selectedLowest = ref(new URLSearchParams(window.location.search).get('lowest') || null)
 const marginal = ref(parseFloat(new URLSearchParams(window.location.search).get('marginal') || '0'))
 const prices = ref()
-const rawPrices = ref()
 
 // Computed
 const is1h = computed(() => selectedInterval.value.value === '1h')
@@ -79,8 +78,6 @@ const data = computed(() => {
   const rows = prices.value.map((x, idx) => {
     const time = Array.isArray(x) ? x[0] : x.at(0)
     const priceData = Array.isArray(x) ? [x[1], x[2], x[3], x[4], x[5]] : [x.at(1), x.at(2), x.at(3), x.at(4), x.at(5)]
-    const year = Array.isArray(x) ? x[6] : x.at(6)
-    const month = Array.isArray(x) ? x[7] : x.at(7)
     const isSelected = hasSelection && idx >= startIndex && idx <= endIndex
     const colors = isSelected ? greenColors : blueColors
 
@@ -188,81 +185,36 @@ function formatLabelForChart (label) {
   return label
 }
 
-function aggregateToHourly (pricesData) {
-  if (!pricesData || pricesData.length === 0) return []
-
-  const hourlyData = []
-  let currentHour = null
-  let hourlyValues = []
-
-  pricesData.forEach((price) => {
-    const hour = price[0].split(':')[0]
-
-    if (currentHour === null) {
-      currentHour = hour
-    }
-
-    if (hour !== currentHour) {
-      // Calculate averages for the completed hour
-      if (hourlyValues.length > 0) {
-        const avgExcise = hourlyValues.reduce((sum, v) => sum + v[1], 0) / hourlyValues.length
-        const avgRenewable = hourlyValues.reduce((sum, v) => sum + v[2], 0) / hourlyValues.length
-        const avgTransmission = hourlyValues.reduce((sum, v) => sum + v[3], 0) / hourlyValues.length
-        const avgPrice = hourlyValues.reduce((sum, v) => sum + v[4], 0) / hourlyValues.length
-        const avgSupplyFee = hourlyValues.reduce((sum, v) => sum + v[5], 0) / hourlyValues.length
-        const firstValue = hourlyValues[0]
-
-        hourlyData.push([
-          `${currentHour}:00`,
-          avgExcise,
-          avgRenewable,
-          avgTransmission,
-          avgPrice,
-          avgSupplyFee,
-          firstValue[6], // year
-          firstValue[7], // month
-          firstValue[8] // day
-        ])
-      }
-
-      currentHour = hour
-      hourlyValues = []
-    }
-
-    hourlyValues.push(price)
-  })
-
-  // Don't forget the last hour
-  if (hourlyValues.length > 0) {
-    const avgExcise = hourlyValues.reduce((sum, v) => sum + v[1], 0) / hourlyValues.length
-    const avgRenewable = hourlyValues.reduce((sum, v) => sum + v[2], 0) / hourlyValues.length
-    const avgTransmission = hourlyValues.reduce((sum, v) => sum + v[3], 0) / hourlyValues.length
-    const avgPrice = hourlyValues.reduce((sum, v) => sum + v[4], 0) / hourlyValues.length
-    const avgSupplyFee = hourlyValues.reduce((sum, v) => sum + v[5], 0) / hourlyValues.length
-    const firstValue = hourlyValues[0]
-
-    hourlyData.push([
-      `${currentHour}:00`,
-      avgExcise,
-      avgRenewable,
-      avgTransmission,
-      avgPrice,
-      avgSupplyFee,
-      firstValue[6], // year
-      firstValue[7], // month
-      firstValue[8] // day
-    ])
-  }
-
-  return hourlyData
-}
-
 async function getPrices () {
   const interval = is1h.value ? '' : '15min/'
   const response = await fetch(`https://argoroots-public.s3.eu-central-1.amazonaws.com/borsihind/${interval}${selectedPlan.value.value}.json`)
   const responseJson = await response.json()
 
-  rawPrices.value = responseJson.map((x) => [
+  const now = new Date()
+  const currentHour = now.getHours()
+  const currentMinute = now.getMinutes()
+  // Round down to nearest 15min interval (0, 15, 30, 45)
+  const currentInterval15 = Math.floor(currentMinute / 15) * 15
+
+  // Filter data based on current time before processing
+  prices.value = responseJson.filter((x) => {
+    const priceHour = x.at(3)
+    const priceMinute = x.at(4)
+
+    // For 1h interval, keep current hour onwards
+    if (is1h.value) {
+      return priceHour >= currentHour
+    }
+
+    // For 15min interval, keep current 15min interval onwards
+    if (priceHour > currentHour) {
+      return true
+    }
+    if (priceHour === currentHour) {
+      return priceMinute >= currentInterval15
+    }
+    return false
+  }).map((x) => [
     x.at(3).toString().padStart(2, '0') + ':' + x.at(4).toString().padStart(2, '0'),
     x.at(8) * 100, // excise
     x.at(9) * 100, // supply security fee
@@ -273,13 +225,6 @@ async function getPrices () {
     x.at(1), // month
     x.at(2) // day
   ])
-
-  updatePrices()
-}
-
-function updatePrices () {
-  if (!rawPrices.value) return
-  prices.value = rawPrices.value
 }
 
 function findLowestTimeSpan (prices, span) {
