@@ -76,8 +76,8 @@ const data = computed(() => {
   ]
 
   const rows = prices.value.map((x, idx) => {
-    const time = Array.isArray(x) ? x[0] : x.at(0)
-    const priceData = Array.isArray(x) ? [x[1], x[2], x[3], x[4], x[5]] : [x.at(1), x.at(2), x.at(3), x.at(4), x.at(5)]
+    const time = x.at(0)
+    const priceData = [x.at(1), x.at(2), x.at(3), x.at(4), x.at(5)]
     const isSelected = hasSelection && idx >= startIndex && idx <= endIndex
     const colors = isSelected ? greenColors : blueColors
 
@@ -85,17 +85,17 @@ const data = computed(() => {
       formatLabelForChart(time),
       createTooltip(time, priceData, marginalValue, colors, is1h.value),
       marginalValue,
-      colors[0],
-      priceData[0],
-      colors[1],
-      priceData[1],
-      colors[2],
-      priceData[2],
-      colors[3],
-      priceData[3],
-      colors[4],
-      priceData[4],
-      colors[5]
+      colors.at(0),
+      priceData.at(0),
+      colors.at(1),
+      priceData.at(1),
+      colors.at(2),
+      priceData.at(2),
+      colors.at(3),
+      priceData.at(3),
+      colors.at(4),
+      priceData.at(4),
+      colors.at(5)
     ]
   })
 
@@ -228,7 +228,7 @@ async function getPrices () {
 }
 
 function findLowestTimeSpan (prices, span) {
-  if (prices.length === 0) return []
+  if (prices.length === 0) return {}
 
   const pricesSum = prices.map((x) => x.at(1) + x.at(2) + x.at(3) + x.at(4) + x.at(5))
 
@@ -244,10 +244,13 @@ function findLowestTimeSpan (prices, span) {
     }
   }
 
+  // Not enough data for the requested span
+  if (lowestSumIndex === -1) return {}
+
   // Calculate end time based on interval
   const minutesPerUnit = is1h.value ? 60 : 15
 
-  const startTime = prices[lowestSumIndex].at(0)
+  const startTime = prices.at(lowestSumIndex).at(0)
   const [startHours, startMinutes] = startTime.split(':').map(Number)
 
   const totalMinutes = span * minutesPerUnit
@@ -257,7 +260,7 @@ function findLowestTimeSpan (prices, span) {
   const endTimeStr = endTime.getHours().toString().padStart(2, '0') + ':' + endTime.getMinutes().toString().padStart(2, '0')
 
   return {
-    start: prices[lowestSumIndex].at(0),
+    start: prices.at(lowestSumIndex).at(0),
     startIndex: lowestSumIndex,
     end: endTimeStr,
     endIndex: lowestSumIndex + span - 1,
@@ -308,6 +311,7 @@ function findLowestTimeSpan (prices, span) {
         {{ x.start }} – {{ x.end }}
 
         <div
+          v-if="x.price"
           class="mt-1 py-1 px-2 text-xs text-green-600 border rounded"
           :class="{ 'font-bold border-transparent bg-transparent': selectedLowest === x.value, 'border-green-300 bg-green-50': selectedLowest !== x.value }"
         >
