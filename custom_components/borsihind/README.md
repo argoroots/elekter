@@ -8,6 +8,7 @@ Home Assistant integration for Estonian electricity exchange prices (Nord Pool) 
 - **Price forecasting** - See future prices and plan energy usage
 - **Energy dashboard integration** - Automatic cost calculation for your energy consumption
 - **Multiple network packages** - Support for V1, V2, V4, V5 packages
+- **Flexible data intervals** - Choose between 15-minute or 1-hour intervals
 - **Configurable marginal** - Add your electricity provider's markup
 
 ## Installation
@@ -35,7 +36,10 @@ Home Assistant integration for Estonian electricity exchange prices (Nord Pool) 
 2. Click **Add Integration**
 3. Search for "Börsihind.ee"
 4. Select your network package (V1, V2, V4, or V5)
-5. Enter your electricity provider's marginal (optional, default: 0)
+5. Choose data interval (15 minutes or 1 hour)
+6. Enter your electricity provider's marginal (optional, default: 0)
+
+You can later adjust the interval and marginal in the integration's options without removing it.
 
 ## Sensors
 
@@ -97,21 +101,23 @@ automation:
         target:
           entity_id: switch.water_heater
 ```
-
-## Technical Details
-
-- Data source: `https://borsihind.s3.eu-central-1.amazonaws.com/`
+Nord Pool via `https://borsihind.s3.eu-central-1.amazonaws.com/`
+- Update interval: 15 minutes
+- Data intervals: 15-minute or 1-hour (user selectable)
+- Data includes: Electricity price, transmission fees, renewable energy tax, supply security fee, excise tax
+- Prices are filtered to show only current and future time periods
+- All prices include 24% VATcom/`
 - Update interval: 15 minutes
 - Data includes: Electricity price, transmission fees, renewable energy tax, supply security fee, excise tax
 - Prices are filtered to show only current and future prices
 
-## Price Components
-
-All prices include VAT and are shown in cents/kWh:
+## Price Components24% VAT and are shown in €/kWh:
 
 1. **Electricity price** - Nord Pool exchange price
-2. **Transmission** - Network transmission fee
-3. **Renewable tax** - Renewable energy tax
+2. **Transmission** - Network transmission fee (varies by package and time)
+3. **Renewable tax** - Renewable energy tax (1.04 c/kWh)
+4. **Supply security** - Supply security fee (0.94 c/kWh)
+5. **Excise** - Electricity excise tax (0.26 c/kWh)y tax
 4. **Supply security** - Supply security fee
 5. **Excise** - Electricity excise tax
 6. **Marginal** - Your provider's markup (configurable)
@@ -124,6 +130,6 @@ For issues, questions, or feature requests, please visit:
 
 ## Credits
 
-Created by [Argo Roots](mailto:argo@roots.ee)
+Data provided by Nord Pool. Based on [Börsihind.ee](https://borsihind.ee):argo@roots.ee)
 
 Based on the Elektri Börsihind web application.
