@@ -1,4 +1,8 @@
-const { S3Client, PutObjectCommand, PutObjectAclCommand, PutObjectTaggingCommand } = require('@aws-sdk/client-s3')
+import { S3Client, PutObjectCommand, PutObjectAclCommand, PutObjectTaggingCommand } from '@aws-sdk/client-s3'
+
+const S3_BUCKET_NAME = 'argoroots-public'
+const S3_KEY_PREFIX = 'borsihind'
+const S3_REGION = 'eu-central-1'
 
 async function getPrices () {
   const start = new Date()
@@ -30,13 +34,40 @@ async function getPrices () {
       allEntries.push(...nextData.multiAreaEntries)
     }
   } catch (error) {
-    console.error('Error fetching prices for next day:', error)
+    console.error('Error fetching prices for next day')
   }
 
-  // Filter out past 15-minute intervals - only keep current interval and future intervals
+  // Filter out past 15-minute intervals - round down to nearest 15-minute mark
   const now = new Date()
-  const currentInterval = new Date(now.getFullYear(), now.getMonth(), now.getDate(), now.getHours(), Math.floor(now.getMinutes() / 15) * 15)
+  const minutes = now.getMinutes()
+  const roundedMinutes = Math.floor(minutes / 15) * 15
+  const currentInterval = new Date(now.getFullYear(), now.getMonth(), now.getDate(), now.getHours(), roundedMinutes)
   return allEntries.filter(entry => new Date(entry.deliveryStart) >= currentInterval)
+}
+
+function aggregateToHourly (prices) {
+  const hourlyMap = new Map()
+
+  prices.forEach(p => {
+    const dt = new Date(p.deliveryStart)
+    const hourKey = `${dt.getFullYear()}-${dt.getMonth()}-${dt.getDate()}-${dt.getHours()}`
+
+    if (!hourlyMap.has(hourKey)) {
+      hourlyMap.set(hourKey, { entries: [], deliveryStart: new Date(dt.getFullYear(), dt.getMonth(), dt.getDate(), dt.getHours(), 0) })
+    }
+    hourlyMap.get(hourKey).entries.push(p)
+  })
+
+  const hourlyPrices = []
+  hourlyMap.forEach(({ entries, deliveryStart }) => {
+    const avgPrice = entries.reduce((sum, e) => sum + e.entryPerArea.EE, 0) / entries.length
+    hourlyPrices.push({
+      deliveryStart: deliveryStart.toISOString(),
+      entryPerArea: { EE: avgPrice }
+    })
+  })
+
+  return hourlyPrices.sort((a, b) => new Date(a.deliveryStart) - new Date(b.deliveryStart))
 }
 
 function changeTimeZone (date, timeZone) {
@@ -67,7 +98,6 @@ function getGridFee (date, service = 'V4') {
     V4: {
       day: 0.0458,
       night: 0.0260
-
     },
     V5: {
       day: 0.0656,
@@ -108,7 +138,7 @@ function getGridFee (date, service = 'V4') {
   }
 }
 
-async function saveJSON (prices, plan) {
+async function saveJSON (prices, plan, suffix = '') {
   const result = prices.map((p) => {
     const dt = changeTimeZone(new Date(p.deliveryStart), 'Europe/Tallinn')
     const price = Math.round(p.entryPerArea.EE * 1.24 / 1000 * 10000) / 10000
@@ -132,15 +162,11 @@ async function saveJSON (prices, plan) {
   })
 
   const jsonResult = JSON.stringify(result)
-  const bucketName = 'argoroots-public'
-  const key = `borsihind/${plan}.json`
+  const bucketName = S3_BUCKET_NAME
+  const key = suffix ? `${S3_KEY_PREFIX}${suffix}/${plan}.json` : `${S3_KEY_PREFIX}/${plan}.json`
 
   const s3Client = new S3Client({
-    region: process.env.S3_REGION,
-    credentials: {
-      accessKeyId: process.env.S3_ACCESS_KEY,
-      secretAccessKey: process.env.S3_SECRET_KEY
-    }
+    region: S3_REGION
   })
 
   await s3Client.send(new PutObjectCommand({
@@ -165,19 +191,47 @@ async function saveJSON (prices, plan) {
   }))
 }
 
-async function main () {
-  const plans = ['V1', 'V2', 'V4', 'V5']
+export const handler = async (event) => {
+  try {
+    console.log('Starting electricity price import...')
 
-  const prices = await getPrices()
+    const plans = ['V1', 'V2', 'V4', 'V5']
+    const prices15min = await getPrices()
 
-  if (prices.length === 0) {
-    console.log('No prices data available, skipping file write')
-    return { ok: false, message: 'No data to save' }
+    if (prices15min.length === 0) {
+      console.log('No prices data available, skipping file write')
+      return {
+        statusCode: 200,
+        body: JSON.stringify({
+          message: 'No data to save',
+          timestamp: new Date().toISOString()
+        })
+      }
+    }
+
+    const pricesHourly = aggregateToHourly(prices15min)
+
+    for (const plan of plans) {
+      await saveJSON(prices15min, plan, '/15min')
+      await saveJSON(pricesHourly, plan, '')
+    }
+
+    return {
+      statusCode: 200,
+      body: JSON.stringify({
+        message: 'Successfully imported electricity prices',
+        timestamp: new Date().toISOString()
+      })
+    }
+  } catch (error) {
+    console.error('Error in Lambda handler:', error)
+    return {
+      statusCode: 500,
+      body: JSON.stringify({
+        message: 'Failed to import electricity prices',
+        error: error.message,
+        timestamp: new Date().toISOString()
+      })
+    }
   }
-
-  for (const plan of plans) {
-    await saveJSON(prices, plan)
-  }
-
-  return { ok: true }
 }

@@ -132,7 +132,7 @@ watch(() => selectedPlan.value, (val) => {
 })
 
 watch(() => selectedInterval.value, (val) => {
-  updatePrices()
+  getPrices()
 
   const params = new URLSearchParams({
     plan: selectedPlan.value.value,
@@ -258,7 +258,8 @@ function aggregateToHourly (pricesData) {
 }
 
 async function getPrices () {
-  const response = await fetch(`https://argoroots-public.s3.eu-central-1.amazonaws.com/borsihind/${selectedPlan.value.value}.json`)
+  const interval = is1h.value ? '' : '15min/'
+  const response = await fetch(`https://argoroots-public.s3.eu-central-1.amazonaws.com/borsihind/${interval}${selectedPlan.value.value}.json`)
   const responseJson = await response.json()
 
   rawPrices.value = responseJson.map((x) => [
@@ -278,12 +279,7 @@ async function getPrices () {
 
 function updatePrices () {
   if (!rawPrices.value) return
-
-  if (is1h.value) {
-    prices.value = aggregateToHourly(rawPrices.value)
-  } else {
-    prices.value = rawPrices.value
-  }
+  prices.value = rawPrices.value
 }
 
 function findLowestTimeSpan (prices, span) {
