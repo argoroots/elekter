@@ -9,6 +9,7 @@ from homeassistant.components.sensor import (
 from homeassistant.config_entries import ConfigEntry
 from homeassistant.const import CURRENCY_EURO, UnitOfEnergy
 from homeassistant.core import HomeAssistant
+from homeassistant.helpers.entity import EntityCategory
 from homeassistant.helpers.entity_platform import AddEntitiesCallback
 from homeassistant.helpers.update_coordinator import CoordinatorEntity
 
@@ -189,7 +190,7 @@ class BorsihindPlanSensor(BorsihindSensorBase):
     """Sensor for network package configuration."""
 
     _attr_name = "Network Package"
-    _attr_icon = "mdi:package-variant"
+    _attr_icon = "mdi:packagEntityCategory.DIAGNOSTIC
     _attr_entity_category = "diagnostic"
 
     def __init__(
@@ -216,7 +217,7 @@ class BorsihindIntervalSensor(BorsihindSensorBase):
 
     _attr_name = "Data Interval"
     _attr_icon = "mdi:clock-outline"
-    _attr_entity_category = "diagnostic"
+    _attr_entity_category = EntityCategory.DIAGNOSTIC
 
     def __init__(
         self,
@@ -240,7 +241,7 @@ class BorsihindMarginalSensor(BorsihindSensorBase):
     _attr_device_class = SensorDeviceClass.MONETARY
     _attr_state_class = SensorStateClass.MEASUREMENT
     _attr_native_unit_of_measurement = f"{CURRENCY_EURO}/{UnitOfEnergy.KILO_WATT_HOUR}"
-    _attr_entity_category = "diagnostic"
+    _attr_entity_category = EntityCategory.DIAGNOSTIC
 
     def __init__(
         self,
