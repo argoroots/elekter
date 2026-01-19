@@ -14,13 +14,13 @@ PLANS = {
     "V4": "Võrk 4",
     "V5": "Võrk 5",
 }
-Intervals
+
+# Intervals
 INTERVALS = {
     "15min": "15 minutit",
     "1h": "1 tund",
 }
 
-#
 # API
 API_URL = "https://borsihind.s3.eu-central-1.amazonaws.com"
 
