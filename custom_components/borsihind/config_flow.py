@@ -72,6 +72,13 @@ class BorsihindOptionsFlow(config_entries.OptionsFlow):
             step_id="init",
             data_schema=vol.Schema(
                 {
+                    vol.Required(
+                        CONF_PLAN,
+                        default=self.config_entry.options.get(
+                            CONF_PLAN,
+                            self.config_entry.data.get(CONF_PLAN, "V1"),
+                        ),
+                    ): vol.In(PLANS),
                     vol.Optional(
                         CONF_INTERVAL,
                         default=self.config_entry.options.get(

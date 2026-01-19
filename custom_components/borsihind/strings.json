@@ -23,8 +23,9 @@
     "step": {
       "init": {
         "title": "Update Configuration",
-        "description": "Update your provider's marginal and data interval",
+        "description": "Update your network package, provider's marginal and data interval",
         "data": {
+          "plan": "Network package",
           "interval": "Data interval",
           "marginal": "Provider marginal (cents/kWh)"
         }
